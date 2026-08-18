@@ -18,6 +18,7 @@ export default function NuevaActividadPage() {
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
+    descripcion_larga: '',
     edad_minima: '',
     edad_maxima: '',
     ubicacion_nombre: '',
@@ -29,7 +30,7 @@ export default function NuevaActividadPage() {
     publicado: true,
   });
 
-  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [archivosImagenes, setArchivosImagenes] = useState<FileList | null>(null);
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
 
@@ -46,9 +47,9 @@ export default function NuevaActividadPage() {
     });
   };
 
-  const handleImagenChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setArchivoImagen(e.target.files[0]);
+  const handleImagenesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setArchivosImagenes(e.target.files);
     }
   };
 
@@ -58,30 +59,32 @@ export default function NuevaActividadPage() {
     setMensaje(null);
 
     try {
-      let imagenUrl: string | null = null;
+      const urlsImagenes: string[] = [];
 
-      // 1. Subir la imagen a Supabase Storage si se ha seleccionado alguna
-      if (archivoImagen) {
-        const fileExt = archivoImagen.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      // 1. Subir todas las imágenes seleccionadas a Supabase Storage
+      if (archivosImagenes && archivosImagenes.length > 0) {
+        for (let i = 0; i < archivosImagenes.length; i++) {
+          const archivo = archivosImagenes[i];
+          const fileExt = archivo.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('actividades-imagenes')
-          .upload(fileName, archivoImagen);
+          const { error: uploadError } = await supabase.storage
+            .from('actividades-imagenes')
+            .upload(fileName, archivo);
 
-        if (uploadError) {
-          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+          if (uploadError) {
+            throw new Error(`Error al subir imagen ${archivo.name}: ${uploadError.message}`);
+          }
+
+          const { data: urlData } = supabase.storage
+            .from('actividades-imagenes')
+            .getPublicUrl(fileName);
+
+          urlsImagenes.push(urlData.publicUrl);
         }
-
-        // Obtener la URL pública de la imagen
-        const { data: urlData } = supabase.storage
-          .from('actividades-imagenes')
-          .getPublicUrl(fileName);
-
-        imagenUrl = urlData.publicUrl;
       }
 
-      // 2. Insertar los datos en la tabla de Supabase
+      // 2. Guardar el registro en la base de datos
       const slugGenerado = generarSlug(formData.titulo);
 
       const { error } = await supabase.from('actividades').insert([
@@ -89,6 +92,7 @@ export default function NuevaActividadPage() {
           titulo: formData.titulo,
           slug: slugGenerado,
           descripcion: formData.descripcion || null,
+          descripcion_larga: formData.descripcion_larga || null,
           edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
           edad_maxima: formData.edad_maxima ? parseInt(formData.edad_maxima) : null,
           ubicacion_nombre: formData.ubicacion_nombre || null,
@@ -98,16 +102,18 @@ export default function NuevaActividadPage() {
           longitud: formData.longitud ? parseFloat(formData.longitud) : null,
           precio: formData.precio || null,
           publicado: formData.publicado,
-          imagen_url: imagenUrl,
+          imagen_url: urlsImagenes.length > 0 ? urlsImagenes[0] : null, // Mantenemos la primera como portada
+          imagenes: urlsImagenes, // Array completo
         },
       ]);
 
       if (error) throw error;
 
-      setMensaje({ tipo: 'exito', texto: '¡Actividad con foto creada correctamente!' });
+      setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente con sus imágenes!' });
       setFormData({
         titulo: '',
         descripcion: '',
+        descripcion_larga: '',
         edad_minima: '',
         edad_maxima: '',
         ubicacion_nombre: '',
@@ -118,7 +124,7 @@ export default function NuevaActividadPage() {
         precio: '',
         publicado: true,
       });
-      setArchivoImagen(null);
+      setArchivosImagenes(null);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al guardar la actividad';
       setMensaje({ tipo: 'error', texto: errorMessage });
@@ -128,7 +134,7 @@ export default function NuevaActividadPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg my-10 border border-gray-100">
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg my-10 border border-gray-100">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Nueva Actividad</h1>
 
       {mensaje && (
@@ -155,33 +161,53 @@ export default function NuevaActividadPage() {
             value={formData.titulo}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Taller de Piragüismo"
+            placeholder="Ej. Taller de Piragüismo en el Sella"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Imagen principal
+            Imágenes de la actividad (puedes seleccionar varias)
           </label>
           <input
             type="file"
             accept="image/*"
-            onChange={handleImagenChange}
+            multiple
+            onChange={handleImagenesChange}
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {archivosImagenes && (
+            <p className="text-xs text-gray-500 mt-1">
+              {archivosImagenes.length} imagen(es) seleccionada(s).
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Resumen o descripción corta
+          </label>
+          <textarea
+            name="descripcion"
+            rows={2}
+            value={formData.descripcion}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
+            placeholder="Breve resumen que aparecerá en la tarjeta de la portada..."
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Descripción
+            Descripción detallada (Tipo blog)
           </label>
           <textarea
-            name="descripcion"
-            rows={3}
-            value={formData.descripcion}
+            name="descripcion_larga"
+            rows={8}
+            value={formData.descripcion_larga}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Detalles sobre la actividad..."
+            placeholder="Escribe aquí con detalle cómo se desarrolla la actividad, recomendaciones, historia, itinerario..."
           />
         </div>
 
@@ -225,7 +251,7 @@ export default function NuevaActividadPage() {
             value={formData.ubicacion_nombre}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Ribadesella, Asturias"
+            placeholder="Ej. Arriondas, Asturias"
           />
         </div>
 
@@ -239,7 +265,7 @@ export default function NuevaActividadPage() {
             value={formData.direccion}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Calle Paseo de la Princesa Letizia, s/n"
+            placeholder="Ej. Paseo de Dionisio de la Huerta"
           />
         </div>
 
@@ -255,7 +281,7 @@ export default function NuevaActividadPage() {
               value={formData.latitud}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. 43.4614"
+              placeholder="Ej. 43.3881"
             />
           </div>
 
@@ -270,7 +296,7 @@ export default function NuevaActividadPage() {
               value={formData.longitud}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. -5.0611"
+              placeholder="Ej. -5.1834"
             />
           </div>
         </div>
@@ -285,7 +311,7 @@ export default function NuevaActividadPage() {
             value={formData.como_llegar}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Autobús de ALSA parada Ribadesella o N-634"
+            placeholder="Ej. Acceso directo por N-634"
           />
         </div>
 
@@ -299,7 +325,7 @@ export default function NuevaActividadPage() {
             value={formData.precio}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Gratis / 15€ por persona"
+            placeholder="Ej. 25€ por persona"
           />
         </div>
 
@@ -322,7 +348,7 @@ export default function NuevaActividadPage() {
           disabled={cargando}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:bg-gray-400 mt-6"
         >
-          {cargando ? 'Subiendo imagen y guardando...' : 'Guardar Actividad'}
+          {cargando ? 'Subiendo imágenes y guardando...' : 'Guardar Actividad'}
         </button>
       </form>
     </div>
