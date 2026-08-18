@@ -29,7 +29,7 @@ const handleSubmit = async (e: FormEvent) => {
 
     const { error } = await supabase.from('actividades').insert([
       {
-        nombre: formData.nombre,
+        titulo: formData.nombre, // <-- Mapeamos 'nombre' del formulario a 'titulo' de Supabase
         descripcion: formData.descripcion,
         ubicacion: formData.ubicacion,
         edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
@@ -38,7 +38,6 @@ const handleSubmit = async (e: FormEvent) => {
     ]);
 
     if (error) {
-      // Muestra la descripción exacta que devuelve la API de Supabase
       setMensaje({ tipo: 'error', texto: `Error Supabase (${error.code}): ${error.message}` });
       setCargando(false);
       return;
@@ -54,6 +53,7 @@ const handleSubmit = async (e: FormEvent) => {
     });
     setCargando(false);
   };
+
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg my-10 border border-gray-100">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Nueva Actividad</h1>
