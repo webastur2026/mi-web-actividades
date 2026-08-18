@@ -3,16 +3,15 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// Función para generar un slug amigable para URLs a partir del título
 function generarSlug(texto: string): string {
   return texto
     .toLowerCase()
     .trim()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
-    .replace(/[^a-z0-9 -]/g, '')     // Elimina caracteres especiales
-    .replace(/\s+/g, '-')            // Reemplaza espacios por guiones
-    .replace(/-+/g, '-');            // Evita guiones dobles
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 export default function NuevaActividadPage() {
@@ -24,6 +23,8 @@ export default function NuevaActividadPage() {
     ubicacion_nombre: '',
     direccion: '',
     como_llegar: '',
+    latitud: '',
+    longitud: '',
     precio: '',
     publicado: true,
   });
@@ -61,6 +62,8 @@ export default function NuevaActividadPage() {
         ubicacion_nombre: formData.ubicacion_nombre || null,
         direccion: formData.direccion || null,
         como_llegar: formData.como_llegar || null,
+        latitud: formData.latitud ? parseFloat(formData.latitud) : null,
+        longitud: formData.longitud ? parseFloat(formData.longitud) : null,
         precio: formData.precio || null,
         publicado: formData.publicado,
       },
@@ -72,7 +75,7 @@ export default function NuevaActividadPage() {
       return;
     }
 
-    setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente en Supabase!' });
+    setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente con coordenadas GPS!' });
     setFormData({
       titulo: '',
       descripcion: '',
@@ -81,6 +84,8 @@ export default function NuevaActividadPage() {
       ubicacion_nombre: '',
       direccion: '',
       como_llegar: '',
+      latitud: '',
+      longitud: '',
       precio: '',
       publicado: true,
     });
@@ -189,6 +194,38 @@ export default function NuevaActividadPage() {
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
             placeholder="Ej. Calle Paseo de la Princesa Letizia, s/n"
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Latitud GPS
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="latitud"
+              value={formData.latitud}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="Ej. 43.4614"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Longitud GPS
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="longitud"
+              value={formData.longitud}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="Ej. -5.0611"
+            />
+          </div>
         </div>
 
         <div>
