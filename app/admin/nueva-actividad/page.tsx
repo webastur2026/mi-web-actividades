@@ -48,9 +48,11 @@ export default function NuevaActividadPage() {
         edad_minima: '',
         precio: '',
       });
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al guardar la actividad';
+} catch (err: any) {
+      // Captura el mensaje específico retornado por Supabase
+      const errorMessage = err?.message || err?.error_description || 'Error al guardar la actividad';
       setMensaje({ tipo: 'error', texto: errorMessage });
+      console.error('Error detallado:', err);
     } finally {
       setCargando(false);
     }
