@@ -22,42 +22,38 @@ export default function NuevaActividadPage() {
     });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setCargando(true);
     setMensaje(null);
 
-    try {
-      const { error } = await supabase.from('actividades').insert([
-        {
-          nombre: formData.nombre,
-          descripcion: formData.descripcion,
-          ubicacion: formData.ubicacion,
-          edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
-          precio: formData.precio ? parseFloat(formData.precio) : 0,
-        },
-      ]);
+    const { error } = await supabase.from('actividades').insert([
+      {
+        nombre: formData.nombre,
+        descripcion: formData.descripcion,
+        ubicacion: formData.ubicacion,
+        edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
+        precio: formData.precio ? parseFloat(formData.precio) : 0,
+      },
+    ]);
 
-      if (error) throw error;
-
-      setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente en Supabase!' });
-      setFormData({
-        nombre: '',
-        descripcion: '',
-        ubicacion: '',
-        edad_minima: '',
-        precio: '',
-      });
-} catch (err: any) {
-      // Captura el mensaje específico retornado por Supabase
-      const errorMessage = err?.message || err?.error_description || 'Error al guardar la actividad';
-      setMensaje({ tipo: 'error', texto: errorMessage });
-      console.error('Error detallado:', err);
-    } finally {
+    if (error) {
+      // Muestra la descripción exacta que devuelve la API de Supabase
+      setMensaje({ tipo: 'error', texto: `Error Supabase (${error.code}): ${error.message}` });
       setCargando(false);
+      return;
     }
-  };
 
+    setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente en Supabase!' });
+    setFormData({
+      nombre: '',
+      descripcion: '',
+      ubicacion: '',
+      edad_minima: '',
+      precio: '',
+    });
+    setCargando(false);
+  };
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg my-10 border border-gray-100">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Nueva Actividad</h1>
