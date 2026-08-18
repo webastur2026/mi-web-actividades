@@ -11,8 +11,7 @@ interface Actividad {
   descripcion: string;
   ubicacion_nombre: string;
   precio: string;
-  edad_minima: number | null;
-  edad_maxima: number | null;
+  imagen_url: string | null;
 }
 
 export default function HomePage() {
@@ -58,7 +57,6 @@ export default function HomePage() {
           </Link>
         </header>
 
-        {/* Buscador */}
         <div className="mb-8">
           <input
             type="text"
@@ -69,7 +67,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Listado de tarjetas */}
         {cargando ? (
           <p className="text-gray-500">Cargando actividades...</p>
         ) : actividadesFiltradas.length === 0 ? (
@@ -79,34 +76,44 @@ export default function HomePage() {
             {actividadesFiltradas.map((actividad) => (
               <div
                 key={actividad.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
               >
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-2">
-                    {actividad.titulo}
-                  </h2>
-                  {actividad.ubicacion_nombre && (
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">
-                      📍 {actividad.ubicacion_nombre}
-                    </p>
-                  )}
-                  {actividad.descripcion && (
-                    <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                      {actividad.descripcion}
-                    </p>
-                  )}
-                </div>
+                {actividad.imagen_url && (
+                  <img
+                    src={actividad.imagen_url}
+                    alt={actividad.titulo}
+                    className="w-full h-48 object-cover"
+                  />
+                )}
 
-                <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between items-center text-sm">
-                  <span className="font-semibold text-gray-700">
-                    {actividad.precio ? actividad.precio : 'Consulte precio'}
-                  </span>
-                  <Link
-                    href={`/${actividad.slug}`}
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    Ver detalles →
-                  </Link>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">
+                      {actividad.titulo}
+                    </h2>
+                    {actividad.ubicacion_nombre && (
+                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">
+                        📍 {actividad.ubicacion_nombre}
+                      </p>
+                    )}
+                    {actividad.descripcion && (
+                      <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                        {actividad.descripcion}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between items-center text-sm">
+                    <span className="font-semibold text-gray-700">
+                      {actividad.precio ? actividad.precio : 'Consulte precio'}
+                    </span>
+                    <Link
+                      href={`/${actividad.slug}`}
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Ver detalles →
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

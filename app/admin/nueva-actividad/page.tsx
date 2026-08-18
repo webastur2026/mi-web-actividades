@@ -29,6 +29,7 @@ export default function NuevaActividadPage() {
     publicado: true,
   });
 
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
 
@@ -45,51 +46,85 @@ export default function NuevaActividadPage() {
     });
   };
 
+  const handleImagenChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setArchivoImagen(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setCargando(true);
     setMensaje(null);
 
-    const slugGenerado = generarSlug(formData.titulo);
+    try {
+      let imagenUrl: string | null = null;
 
-    const { error } = await supabase.from('actividades').insert([
-      {
-        titulo: formData.titulo,
-        slug: slugGenerado,
-        descripcion: formData.descripcion || null,
-        edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
-        edad_maxima: formData.edad_maxima ? parseInt(formData.edad_maxima) : null,
-        ubicacion_nombre: formData.ubicacion_nombre || null,
-        direccion: formData.direccion || null,
-        como_llegar: formData.como_llegar || null,
-        latitud: formData.latitud ? parseFloat(formData.latitud) : null,
-        longitud: formData.longitud ? parseFloat(formData.longitud) : null,
-        precio: formData.precio || null,
-        publicado: formData.publicado,
-      },
-    ]);
+      // 1. Subir la imagen a Supabase Storage si se ha seleccionado alguna
+      if (archivoImagen) {
+        const fileExt = archivoImagen.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
-    if (error) {
-      setMensaje({ tipo: 'error', texto: `Error Supabase (${error.code}): ${error.message}` });
+        const { error: uploadError } = await supabase.storage
+          .from('actividades-imagenes')
+          .upload(fileName, archivoImagen);
+
+        if (uploadError) {
+          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        }
+
+        // Obtener la URL pública de la imagen
+        const { data: urlData } = supabase.storage
+          .from('actividades-imagenes')
+          .getPublicUrl(fileName);
+
+        imagenUrl = urlData.publicUrl;
+      }
+
+      // 2. Insertar los datos en la tabla de Supabase
+      const slugGenerado = generarSlug(formData.titulo);
+
+      const { error } = await supabase.from('actividades').insert([
+        {
+          titulo: formData.titulo,
+          slug: slugGenerado,
+          descripcion: formData.descripcion || null,
+          edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
+          edad_maxima: formData.edad_maxima ? parseInt(formData.edad_maxima) : null,
+          ubicacion_nombre: formData.ubicacion_nombre || null,
+          direccion: formData.direccion || null,
+          como_llegar: formData.como_llegar || null,
+          latitud: formData.latitud ? parseFloat(formData.latitud) : null,
+          longitud: formData.longitud ? parseFloat(formData.longitud) : null,
+          precio: formData.precio || null,
+          publicado: formData.publicado,
+          imagen_url: imagenUrl,
+        },
+      ]);
+
+      if (error) throw error;
+
+      setMensaje({ tipo: 'exito', texto: '¡Actividad con foto creada correctamente!' });
+      setFormData({
+        titulo: '',
+        descripcion: '',
+        edad_minima: '',
+        edad_maxima: '',
+        ubicacion_nombre: '',
+        direccion: '',
+        como_llegar: '',
+        latitud: '',
+        longitud: '',
+        precio: '',
+        publicado: true,
+      });
+      setArchivoImagen(null);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar la actividad';
+      setMensaje({ tipo: 'error', texto: errorMessage });
+    } finally {
       setCargando(false);
-      return;
     }
-
-    setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente con coordenadas GPS!' });
-    setFormData({
-      titulo: '',
-      descripcion: '',
-      edad_minima: '',
-      edad_maxima: '',
-      ubicacion_nombre: '',
-      direccion: '',
-      como_llegar: '',
-      latitud: '',
-      longitud: '',
-      precio: '',
-      publicado: true,
-    });
-    setCargando(false);
   };
 
   return (
@@ -121,6 +156,18 @@ export default function NuevaActividadPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
             placeholder="Ej. Taller de Piragüismo"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Imagen principal
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImagenChange}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
         </div>
 
@@ -275,7 +322,7 @@ export default function NuevaActividadPage() {
           disabled={cargando}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:bg-gray-400 mt-6"
         >
-          {cargando ? 'Guardando...' : 'Guardar Actividad'}
+          {cargando ? 'Subiendo imagen y guardando...' : 'Guardar Actividad'}
         </button>
       </form>
     </div>
