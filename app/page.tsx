@@ -62,7 +62,7 @@ export default function HomePage() {
             El sol y la mariposa
           </h1>
           <p className="text-lg text-gray-600">
-            El mejor ocio para disfrutar con los peques de la cas.
+            El mejor ocio para disfrutar con los peques de la casa.
           </p>
         </header>
 
