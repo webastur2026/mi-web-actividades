@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import BotonCompartir from './BotonCompartir';
+import GaleriaImagenes from './GaleriaImagenes';
 
 export const revalidate = 0;
 
@@ -9,7 +10,6 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Función auxiliar para asegurar que los enlaces web sean externos
 function formatearUrl(url: string | null): string | null {
   if (!url) return null;
   const urlLimpia = url.trim();
@@ -47,19 +47,8 @@ export default async function ActividadDetallePage({ params }: Props) {
     <main className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         
-        {/* Galería de imágenes */}
-        {listaImagenes.length > 0 && (
-          <div className="space-y-2 p-2 bg-gray-100">
-            <img src={listaImagenes[0]} alt={actividad.titulo} className="w-full h-80 object-cover rounded-lg" />
-            {listaImagenes.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {listaImagenes.slice(1).map((imgUrl, i) => (
-                  <img key={i} src={imgUrl} alt="Galería" className="w-full h-20 object-cover rounded-md" />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Componente de Galería Interactiva */}
+        <GaleriaImagenes imagenes={listaImagenes} titulo={actividad.titulo} />
 
         <div className="p-8">
           <div className="flex justify-between items-center mb-6">
@@ -90,7 +79,7 @@ export default async function ActividadDetallePage({ params }: Props) {
               </div>
             )}
 
-            {/* Datos de contacto (Teléfono, Email y Web) */}
+            {/* Datos de contacto */}
             {(actividad.telefono || actividad.email || webUrlValida) && (
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <span className="font-semibold text-gray-800 text-sm">Información y Reservas:</span>
@@ -125,7 +114,7 @@ export default async function ActividadDetallePage({ params }: Props) {
               </div>
             )}
 
-            {/* Mapa interactivo y GPS */}
+            {/* Mapa interactivo */}
             {actividad.latitud && actividad.longitud && (
               <div className="border-t pt-6">
                 <h2 className="text-lg font-bold text-gray-800 mb-3">Ubicación exacta</h2>
