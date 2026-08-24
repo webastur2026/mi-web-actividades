@@ -24,7 +24,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body className="flex flex-col min-h-screen">
+        <div className="flex-grow">{children}</div>
+        <Footer />
+      </body>
     </html>
   );
 }
