@@ -3,8 +3,20 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import BotonCompartir from './BotonCompartir';
 
+export const revalidate = 0;
+
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+// Función auxiliar para asegurar que los enlaces web sean externos
+function formatearUrl(url: string | null): string | null {
+  if (!url) return null;
+  const urlLimpia = url.trim();
+  if (urlLimpia.startsWith('http://') || urlLimpia.startsWith('https://')) {
+    return urlLimpia;
+  }
+  return `https://${urlLimpia}`;
 }
 
 export default async function ActividadDetallePage({ params }: Props) {
@@ -28,6 +40,8 @@ export default async function ActividadDetallePage({ params }: Props) {
   const enlaceGoogleMaps = actividad.latitud && actividad.longitud
     ? `https://www.google.com/maps/search/?api=1&query=${actividad.latitud},${actividad.longitud}`
     : null;
+
+  const webUrlValida = formatearUrl(actividad.web_url);
 
   return (
     <main className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
@@ -76,19 +90,35 @@ export default async function ActividadDetallePage({ params }: Props) {
               </div>
             )}
 
-            {/* Datos de contacto */}
-            {(actividad.telefono || actividad.email || actividad.web_url) && (
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-wrap gap-4 items-center justify-between">
+            {/* Datos de contacto (Teléfono, Email y Web) */}
+            {(actividad.telefono || actividad.email || webUrlValida) && (
+              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <span className="font-semibold text-gray-800 text-sm">Información y Reservas:</span>
-                <div className="flex flex-wrap gap-3 text-sm">
+                <div className="flex flex-wrap gap-2 text-sm">
                   {actividad.telefono && (
-                    <a href={`tel:${actividad.telefono}`} className="bg-white border text-blue-600 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50">
+                    <a
+                      href={`tel:${actividad.telefono}`}
+                      className="bg-white border border-gray-200 text-blue-600 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
                       📞 {actividad.telefono}
                     </a>
                   )}
-                  {actividad.web_url && (
-                    <a href={actividad.web_url} target="_blank" rel="noreferrer" className="bg-blue-600 text-white font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700">
-                      🌐 Web Oficial
+                  {actividad.email && (
+                    <a
+                      href={`mailto:${actividad.email}`}
+                      className="bg-white border border-gray-200 text-blue-600 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                      ✉️ {actividad.email}
+                    </a>
+                  )}
+                  {webUrlValida && (
+                    <a
+                      href={webUrlValida}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-600 text-white font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      🌐 Web Oficial ↗
                     </a>
                   )}
                 </div>
@@ -99,7 +129,12 @@ export default async function ActividadDetallePage({ params }: Props) {
             {actividad.latitud && actividad.longitud && (
               <div className="border-t pt-6">
                 <h2 className="text-lg font-bold text-gray-800 mb-3">Ubicación exacta</h2>
-                <a href={enlaceGoogleMaps!} target="_blank" rel="noreferrer" className="block relative group rounded-xl overflow-hidden border border-gray-300">
+                <a
+                  href={enlaceGoogleMaps!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative group rounded-xl overflow-hidden border border-gray-300"
+                >
                   <iframe
                     width="100%"
                     height="220"
@@ -110,7 +145,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                   ></iframe>
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                     <span className="bg-white text-gray-900 font-bold px-4 py-2 rounded-lg shadow-lg text-sm">
-                      📍 Abrir mapa interactivo en Google Maps
+                      📍 Abrir mapa en Google Maps
                     </span>
                   </div>
                 </a>
