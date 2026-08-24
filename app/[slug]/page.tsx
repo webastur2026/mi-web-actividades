@@ -10,6 +10,11 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+interface EnlaceInteres {
+  titulo: string;
+  url: string;
+}
+
 function formatearUrl(url: string | null): string | null {
   if (!url) return null;
   const urlLimpia = url.trim();
@@ -37,6 +42,8 @@ export default async function ActividadDetallePage({ params }: Props) {
     ? [actividad.imagen_url]
     : [];
 
+  const enlacesInteres: EnlaceInteres[] = actividad.enlaces || [];
+
   const enlaceGoogleMaps = actividad.latitud && actividad.longitud
     ? `https://www.google.com/maps/search/?api=1&query=${actividad.latitud},${actividad.longitud}`
     : null;
@@ -47,7 +54,7 @@ export default async function ActividadDetallePage({ params }: Props) {
     <main className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         
-        {/* Componente de Galería Interactiva */}
+        {/* Galería Interactiva */}
         <GaleriaImagenes imagenes={listaImagenes} titulo={actividad.titulo} />
 
         <div className="p-8">
@@ -76,6 +83,33 @@ export default async function ActividadDetallePage({ params }: Props) {
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-3">Detalles de la actividad</h2>
                 <div className="whitespace-pre-line leading-relaxed text-gray-800">{actividad.descripcion_larga}</div>
+              </div>
+            )}
+
+            {/* Enlaces de interés (Wikiloc, restaurantes, descargas...) */}
+            {enlacesInteres.length > 0 && (
+              <div className="border-t pt-6">
+                <h2 className="text-lg font-bold text-gray-800 mb-3">Enlaces de interés</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {enlacesInteres.map((item, index) => {
+                    const urlValida = formatearUrl(item.url);
+                    if (!urlValida) return null;
+                    return (
+                      <a
+                        key={index}
+                        href={urlValida}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3.5 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl font-medium text-sm text-gray-800 hover:text-blue-700 transition-all group"
+                      >
+                        <span className="truncate pr-2">🔗 {item.titulo}</span>
+                        <span className="text-xs text-gray-400 group-hover:text-blue-600 font-bold shrink-0">
+                          Abrir ↗
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
