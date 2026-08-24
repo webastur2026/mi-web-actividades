@@ -59,10 +59,10 @@ export default function HomePage() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
-            Actividades y Planes
+            El sol y la mariposa
           </h1>
           <p className="text-lg text-gray-600">
-            Descubre las mejores experiencias e itinerarios.
+            El mejor ocio para disfrutar con los peques de la cas.
           </p>
         </header>
 
