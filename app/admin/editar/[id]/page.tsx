@@ -28,6 +28,8 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
     publicado: true,
   });
 
+  const [imagenesExistentes, setImagenesExistentes] = useState<string[]>([]);
+  const [nuevasImagenes, setNuevasImagenes] = useState<FileList | null>(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
@@ -62,6 +64,12 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
           precio: data.precio || '',
           publicado: data.publicado ?? true,
         });
+
+        // Cargar galería de imágenes guardadas
+        const galeria = data.imagenes && data.imagenes.length > 0 
+          ? data.imagenes 
+          : data.imagen_url ? [data.imagen_url] : [];
+        setImagenesExistentes(galeria);
       }
       setCargando(false);
     }
@@ -78,12 +86,43 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
     setFormData({ ...formData, [e.target.name]: value });
   };
 
+  const handleEliminarImagen = (urlAEliminar: string) => {
+    setImagenesExistentes(imagenesExistentes.filter((url) => url !== urlAEliminar));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setGuardando(true);
     setMensaje(null);
 
     try {
+      const urlsNuevas: string[] = [];
+
+      // 1. Subir las imágenes nuevas si las hay
+      if (nuevasImagenes && nuevasImagenes.length > 0) {
+        for (let i = 0; i < nuevasImagenes.length; i++) {
+          const archivo = nuevasImagenes[i];
+          const fileExt = archivo.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('actividades-imagenes')
+            .upload(fileName, archivo);
+
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase.storage
+            .from('actividades-imagenes')
+            .getPublicUrl(fileName);
+
+          urlsNuevas.push(urlData.publicUrl);
+        }
+      }
+
+      // 2. Combinar imágenes que se mantuvieron + las recién subidas
+      const galeriaFinal = [...imagenesExistentes, ...urlsNuevas];
+
+      // 3. Actualizar la base de datos
       const { error } = await supabase
         .from('actividades')
         .update({
@@ -104,12 +143,14 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
           web_url: formData.web_url || null,
           precio: formData.precio || null,
           publicado: formData.publicado,
+          imagen_url: galeriaFinal.length > 0 ? galeriaFinal[0] : null,
+          imagenes: galeriaFinal,
         })
         .eq('id', id);
 
       if (error) throw error;
 
-      setMensaje({ tipo: 'exito', texto: '¡Actividad actualizada correctamente!' });
+      setMensaje({ tipo: 'exito', texto: '¡Actividad e imágenes actualizadas!' });
       setTimeout(() => router.push('/admin'), 1500);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar';
@@ -132,6 +173,41 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Gestión de imágenes actuales */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes actuales</label>
+          {imagenesExistentes.length === 0 ? (
+            <p className="text-xs text-gray-400 italic mb-3">No hay imágenes en la galería.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
+              {imagenesExistentes.map((url, index) => (
+                <div key={index} className="relative group rounded-md overflow-hidden border border-gray-200">
+                  <img src={url} alt="Vista previa" className="w-full h-24 object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleEliminarImagen(url)}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 text-xs hover:bg-red-700 transition-colors shadow-md"
+                    title="Quitar foto"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <label className="block text-sm font-medium text-gray-700 mb-1">Añadir más imágenes</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setNuevasImagenes(e.target.files)}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700"
+          />
+        </div>
+
+        <hr className="my-4" />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
@@ -202,7 +278,7 @@ export default function EditarActividadPage({ params }: { params: Promise<{ id: 
         </div>
 
         <button type="submit" disabled={guardando} className="w-full bg-blue-600 text-white font-medium py-2 rounded-md mt-4">
-          {guardando ? 'Guardando cambios...' : 'Actualizar Actividad'}
+          {guardando ? 'Guardando cambios e imágenes...' : 'Actualizar Actividad'}
         </button>
       </form>
     </div>
