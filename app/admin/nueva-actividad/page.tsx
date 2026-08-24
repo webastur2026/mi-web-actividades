@@ -17,6 +17,8 @@ function generarSlug(texto: string): string {
 export default function NuevaActividadPage() {
   const [formData, setFormData] = useState({
     titulo: '',
+    categoria: 'Aventura',
+    organizador: '',
     descripcion: '',
     descripcion_larga: '',
     edad_minima: '',
@@ -26,6 +28,9 @@ export default function NuevaActividadPage() {
     como_llegar: '',
     latitud: '',
     longitud: '',
+    telefono: '',
+    email: '',
+    web_url: '',
     precio: '',
     publicado: true,
   });
@@ -61,7 +66,6 @@ export default function NuevaActividadPage() {
     try {
       const urlsImagenes: string[] = [];
 
-      // 1. Subir todas las imágenes seleccionadas a Supabase Storage
       if (archivosImagenes && archivosImagenes.length > 0) {
         for (let i = 0; i < archivosImagenes.length; i++) {
           const archivo = archivosImagenes[i];
@@ -72,9 +76,7 @@ export default function NuevaActividadPage() {
             .from('actividades-imagenes')
             .upload(fileName, archivo);
 
-          if (uploadError) {
-            throw new Error(`Error al subir imagen ${archivo.name}: ${uploadError.message}`);
-          }
+          if (uploadError) throw uploadError;
 
           const { data: urlData } = supabase.storage
             .from('actividades-imagenes')
@@ -84,13 +86,14 @@ export default function NuevaActividadPage() {
         }
       }
 
-      // 2. Guardar el registro en la base de datos
       const slugGenerado = generarSlug(formData.titulo);
 
       const { error } = await supabase.from('actividades').insert([
         {
           titulo: formData.titulo,
           slug: slugGenerado,
+          categoria: formData.categoria || null,
+          organizador: formData.organizador || null,
           descripcion: formData.descripcion || null,
           descripcion_larga: formData.descripcion_larga || null,
           edad_minima: formData.edad_minima ? parseInt(formData.edad_minima) : null,
@@ -100,18 +103,23 @@ export default function NuevaActividadPage() {
           como_llegar: formData.como_llegar || null,
           latitud: formData.latitud ? parseFloat(formData.latitud) : null,
           longitud: formData.longitud ? parseFloat(formData.longitud) : null,
+          telefono: formData.telefono || null,
+          email: formData.email || null,
+          web_url: formData.web_url || null,
           precio: formData.precio || null,
           publicado: formData.publicado,
-          imagen_url: urlsImagenes.length > 0 ? urlsImagenes[0] : null, // Mantenemos la primera como portada
-          imagenes: urlsImagenes, // Array completo
+          imagen_url: urlsImagenes.length > 0 ? urlsImagenes[0] : null,
+          imagenes: urlsImagenes,
         },
       ]);
 
       if (error) throw error;
 
-      setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente con sus imágenes!' });
+      setMensaje({ tipo: 'exito', texto: '¡Actividad creada correctamente!' });
       setFormData({
         titulo: '',
+        categoria: 'Aventura',
+        organizador: '',
         descripcion: '',
         descripcion_larga: '',
         edad_minima: '',
@@ -121,12 +129,15 @@ export default function NuevaActividadPage() {
         como_llegar: '',
         latitud: '',
         longitud: '',
+        telefono: '',
+        email: '',
+        web_url: '',
         precio: '',
         publicado: true,
       });
       setArchivosImagenes(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al guardar la actividad';
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar';
       setMensaje({ tipo: 'error', texto: errorMessage });
     } finally {
       setCargando(false);
@@ -138,217 +149,100 @@ export default function NuevaActividadPage() {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Nueva Actividad</h1>
 
       {mensaje && (
-        <div
-          className={`p-4 mb-6 rounded-md ${
-            mensaje.tipo === 'exito'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}
-        >
+        <div className={`p-4 mb-6 rounded-md ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
           {mensaje.texto}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Título de la actividad *
-          </label>
-          <input
-            type="text"
-            name="titulo"
-            required
-            value={formData.titulo}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Taller de Piragüismo en el Sella"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+            <input type="text" name="titulo" required value={formData.titulo} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+            <select name="categoria" value={formData.categoria} onChange={handleChange} className="w-full border rounded-md p-2 text-black">
+              <option value="Aventura">Aventura / Deporte</option>
+              <option value="Naturaleza">Naturaleza / Senderismo</option>
+              <option value="Cultura">Cultura / Patrimonio</option>
+              <option value="Gastronomía">Gastronomía</option>
+              <option value="Infantil">Familiar / Infantil</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Imágenes de la actividad (puedes seleccionar varias)
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImagenesChange}
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-          {archivosImagenes && (
-            <p className="text-xs text-gray-500 mt-1">
-              {archivosImagenes.length} imagen(es) seleccionada(s).
-            </p>
-          )}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Empresa u Organizador</label>
+          <input type="text" name="organizador" value={formData.organizador} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="Ej. Club de Kayak Sella" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Resumen o descripción corta
-          </label>
-          <textarea
-            name="descripcion"
-            rows={2}
-            value={formData.descripcion}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Breve resumen que aparecerá en la tarjeta de la portada..."
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+          <input type="file" accept="image/*" multiple onChange={handleImagenesChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Descripción detallada (Tipo blog)
-          </label>
-          <textarea
-            name="descripcion_larga"
-            rows={8}
-            value={formData.descripcion_larga}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Escribe aquí con detalle cómo se desarrolla la actividad, recomendaciones, historia, itinerario..."
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Resumen corto (para la tarjeta)</label>
+          <textarea name="descripcion" rows={2} value={formData.descripcion} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción detallada (Estilo blog)</label>
+          <textarea name="descripcion_larga" rows={6} value={formData.descripcion_larga} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+            <input type="text" name="telefono" value={formData.telefono} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="+34 600..." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="info@..." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Web oficial</label>
+            <input type="text" name="web_url" value={formData.web_url} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="https://..." />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Edad Mínima
-            </label>
-            <input
-              type="number"
-              name="edad_minima"
-              value={formData.edad_minima}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. 8"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Edad Mínima</label>
+            <input type="number" name="edad_minima" value={formData.edad_minima} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Edad Máxima
-            </label>
-            <input
-              type="number"
-              name="edad_maxima"
-              value={formData.edad_maxima}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. 99"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Edad Máxima</label>
+            <input type="number" name="edad_maxima" value={formData.edad_maxima} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre de la Ubicación
-          </label>
-          <input
-            type="text"
-            name="ubicacion_nombre"
-            value={formData.ubicacion_nombre}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Arriondas, Asturias"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Dirección exacta
-          </label>
-          <input
-            type="text"
-            name="direccion"
-            value={formData.direccion}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Paseo de Dionisio de la Huerta"
-          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Latitud GPS
-            </label>
-            <input
-              type="number"
-              step="any"
-              name="latitud"
-              value={formData.latitud}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. 43.3881"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Municipio / Ubicación</label>
+            <input type="text" name="ubicacion_nombre" value={formData.ubicacion_nombre} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="Ej. Arriondas" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Longitud GPS
-            </label>
-            <input
-              type="number"
-              step="any"
-              name="longitud"
-              value={formData.longitud}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Ej. -5.1834"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+            <input type="text" name="precio" value={formData.precio} onChange={handleChange} className="w-full border rounded-md p-2 text-black" placeholder="Ej. 25€" />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cómo llegar
-          </label>
-          <input
-            type="text"
-            name="como_llegar"
-            value={formData.como_llegar}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. Acceso directo por N-634"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Latitud GPS</label>
+            <input type="number" step="any" name="latitud" value={formData.latitud} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Longitud GPS</label>
+            <input type="number" step="any" name="longitud" value={formData.longitud} onChange={handleChange} className="w-full border rounded-md p-2 text-black" />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Precio
-          </label>
-          <input
-            type="text"
-            name="precio"
-            value={formData.precio}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 text-black focus:ring-2 focus:ring-blue-500 outline-none"
-            placeholder="Ej. 25€ por persona"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 pt-2">
-          <input
-            type="checkbox"
-            id="publicado"
-            name="publicado"
-            checked={formData.publicado}
-            onChange={handleChange}
-            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-          />
-          <label htmlFor="publicado" className="text-sm text-gray-700">
-            Publicar inmediatamente
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          disabled={cargando}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:bg-gray-400 mt-6"
-        >
-          {cargando ? 'Subiendo imágenes y guardando...' : 'Guardar Actividad'}
+        <button type="submit" disabled={cargando} className="w-full bg-blue-600 text-white font-medium py-2 rounded-md mt-4">
+          {cargando ? 'Guardando...' : 'Guardar Actividad'}
         </button>
       </form>
     </div>
