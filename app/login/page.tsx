@@ -16,17 +16,25 @@ export default function LoginPage() {
     setCargando(true);
     setError(null);
 
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (loginError) {
-      setError('Credenciales incorrectas. Revisa tu email y contraseña.');
+      if (loginError) {
+        setError(loginError.message || 'Credenciales incorrectas.');
+        setCargando(false);
+        return;
+      }
+
+      if (data?.session) {
+        // Redirección directa al panel
+        router.push('/admin');
+      }
+    } catch (err) {
+      setError('Ocurrió un error inesperado al conectar con Supabase.');
       setCargando(false);
-    } else {
-      router.push('/admin');
-      router.refresh();
     }
   };
 
@@ -68,7 +76,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={cargando}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
             {cargando ? 'Iniciando sesión...' : 'Entrar'}
           </button>
