@@ -45,7 +45,6 @@ export default async function ActividadDetallePage({ params }: Props) {
 
   const enlacesInteres: EnlaceInteres[] = actividad.enlaces || [];
 
-  // Obtener todas las categorías (soporte múltiple y antiguo)
   const listaCategorias: string[] = actividad.categorias && actividad.categorias.length > 0
     ? actividad.categorias
     : actividad.categoria
@@ -57,6 +56,15 @@ export default async function ActividadDetallePage({ params }: Props) {
     : null;
 
   const webUrlValida = formatearUrl(actividad.web_url);
+
+  // Extraer URL limpia de Wikiloc si se pegó un código <iframe> entero
+  let wikilocUrlClean = actividad.wikiloc_embed || '';
+  if (wikilocUrlClean.includes('src=')) {
+    const match = wikilocUrlClean.match(/src="([^"]+)"/);
+    if (match && match[1]) {
+      wikilocUrlClean = match[1];
+    }
+  }
 
   return (
     <main className="min-h-screen py-8 px-4 sm:px-8">
@@ -139,6 +147,25 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
+              {/* Visor Interactivo de Wikiloc */}
+              {wikilocUrlClean && (
+                <div className="border-t border-[#EBF2E8] pt-6">
+                  <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3 flex items-center gap-2">
+                    🗺️ Mapa y Altimetría (Wikiloc)
+                  </h2>
+                  <div className="rounded-2xl overflow-hidden border border-[#EBF2E8] shadow-sm bg-white">
+                    <iframe
+                      src={wikilocUrlClean}
+                      width="100%"
+                      height="400"
+                      frameBorder="0"
+                      scrolling="no"
+                      className="w-full"
+                    ></iframe>
+                  </div>
+                </div>
+              )}
+
               {/* Enlaces de interés */}
               {enlacesInteres.length > 0 && (
                 <div className="border-t border-[#EBF2E8] pt-6">
@@ -205,7 +232,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Mapa */}
+              {/* Mapa de Google / OpenStreetMap alternativo */}
               {actividad.latitud && actividad.longitud && (
                 <div className="border-t border-[#EBF2E8] pt-6">
                   <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3">

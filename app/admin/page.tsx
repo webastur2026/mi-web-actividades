@@ -27,6 +27,7 @@ interface Actividad {
   telefono: string;
   email: string;
   web_url: string;
+  wikiloc_embed?: string;
   publicado: boolean;
   imagenes: string[];
   enlaces: EnlaceInteres[];
@@ -61,6 +62,7 @@ export default function AdminDashboard() {
     telefono: '',
     email: '',
     web_url: '',
+    wikiloc_embed: '',
     publicado: true,
     imagenes: [],
     enlaces: [],
@@ -189,6 +191,7 @@ export default function AdminDashboard() {
       categorias: act.categorias || (act.categoria ? [act.categoria] : []),
       imagenes: act.imagenes || [],
       enlaces: act.enlaces || [],
+      wikiloc_embed: act.wikiloc_embed || '',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -208,32 +211,34 @@ export default function AdminDashboard() {
       telefono: '',
       email: '',
       web_url: '',
+      wikiloc_embed: '',
       publicado: true,
       imagenes: [],
       enlaces: [],
     });
   }
 
-async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-  const payload = {
-    ...formData,
-    slug: formData.slug || generarSlug(formData.titulo),
-    categoria: formData.categorias.length > 0 ? formData.categorias[0] : null, // Mantiene la primera por compatibilidad
-    categorias: formData.categorias, // Guarda el array completo de categorías
-    imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
-  };
+    const payload = {
+      ...formData,
+      slug: formData.slug || generarSlug(formData.titulo),
+      categoria: formData.categorias.length > 0 ? formData.categorias[0] : null,
+      categorias: formData.categorias,
+      imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
+    };
 
-  if (editando?.id) {
-    await supabase.from('actividades').update(payload).eq('id', editando.id);
-  } else {
-    await supabase.from('actividades').insert([payload]);
+    if (editando?.id) {
+      await supabase.from('actividades').update(payload).eq('id', editando.id);
+    } else {
+      await supabase.from('actividades').insert([payload]);
+    }
+
+    cancelarEdicion();
+    cargarActividades();
   }
 
-  cancelarEdicion();
-  cargarActividades();
-}
   async function togglePublicado(act: Actividad) {
     if (!act.id) return;
     await supabase.from('actividades').update({ publicado: !act.publicado }).eq('id', act.id);
@@ -398,6 +403,23 @@ async function handleSubmit(e: React.FormEvent) {
                 content={formData.descripcion_larga}
                 onChange={(html) => setFormData((prev) => ({ ...prev, descripcion_larga: html }))}
               />
+            </div>
+
+            {/* Nuevo campo de Wikiloc */}
+            <div className="bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
+              <label className="block text-xs font-bold text-[#4A3728] mb-1">
+                🗺️ Código o Enlace de Embebido Wikiloc (Opcional)
+              </label>
+              <input
+                type="text"
+                value={formData.wikiloc_embed || ''}
+                onChange={(e) => setFormData({ ...formData, wikiloc_embed: e.target.value })}
+                className="w-full p-2.5 bg-white border border-[#EBF2E8] rounded-xl text-xs text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
+                placeholder="Pega aquí la URL de embebido o el código <iframe> completo de Wikiloc"
+              />
+              <p className="text-[11px] text-[#6B5340] mt-1">
+                En Wikiloc: Clic en Compartir → Incluir en tu web → Copia el código iframe o el enlace de embeber.
+              </p>
             </div>
 
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
