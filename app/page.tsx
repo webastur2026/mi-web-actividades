@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-import ListaActividades from './ListaActividades';
+import ListaActividades from './listaActividades';
 
 export const revalidate = 0;
 
@@ -16,7 +16,7 @@ export default async function HomePage() {
       <div className="max-w-6xl mx-auto">
         {/* Encabezado Principal con Logo */}
         <header className="mb-10 text-center flex flex-col items-center">
-          <div className="relative w-48 h-48 sm:w-56 sm:h-56 mb-4 drop-shadow-sm hover:scale-105 transition-transform duration-300">
+          <div className="relative w-44 h-44 sm:w-56 sm:h-56 mb-3 drop-shadow-sm hover:scale-105 transition-transform duration-300">
             <Image
               src="/logo.png"
               alt="Logo El Sol y la Mariposa"
@@ -31,7 +31,7 @@ export default async function HomePage() {
           <p className="mt-2 text-base sm:text-lg text-[#6B5340] max-w-xl font-medium">
             El mejor ocio para disfrutar con los peques de la casa
           </p>
-          <div className="w-24 h-1 bg-[#F48C2E] rounded-full mt-4"></div>
+          <div className="w-20 h-1 bg-[#F48C2E] rounded-full mt-4"></div>
         </header>
 
         {/* Buscador y Listado Filtrable */}
