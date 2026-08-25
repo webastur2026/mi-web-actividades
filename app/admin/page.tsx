@@ -214,26 +214,26 @@ export default function AdminDashboard() {
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-    const payload = {
-      ...formData,
-      slug: formData.slug || generarSlug(formData.titulo),
-      categoria: formData.categorias.length > 0 ? formData.categorias[0] : null,
-      imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
-    };
+  const payload = {
+    ...formData,
+    slug: formData.slug || generarSlug(formData.titulo),
+    categoria: formData.categorias.length > 0 ? formData.categorias[0] : null, // Mantiene la primera por compatibilidad
+    categorias: formData.categorias, // Guarda el array completo de categorías
+    imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
+  };
 
-    if (editando?.id) {
-      await supabase.from('actividades').update(payload).eq('id', editando.id);
-    } else {
-      await supabase.from('actividades').insert([payload]);
-    }
-
-    cancelarEdicion();
-    cargarActividades();
+  if (editando?.id) {
+    await supabase.from('actividades').update(payload).eq('id', editando.id);
+  } else {
+    await supabase.from('actividades').insert([payload]);
   }
 
+  cancelarEdicion();
+  cargarActividades();
+}
   async function togglePublicado(act: Actividad) {
     if (!act.id) return;
     await supabase.from('actividades').update({ publicado: !act.publicado }).eq('id', act.id);
