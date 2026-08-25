@@ -31,6 +31,13 @@ body {
   }
 }
 
+/* Fondo moderno con luces sutiles de la paleta */
 body {
   font-family: var(--font-nunito), system-ui, sans-serif;
+  background-color: #FAFAF7;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(235, 242, 232, 0.8) 0px, transparent 50%),
+    radial-gradient(at 90% 20%, rgba(244, 140, 46, 0.08) 0px, transparent 40%),
+    radial-gradient(at 50% 80%, rgba(31, 164, 182, 0.06) 0px, transparent 50%);
+  background-attachment: fixed;
 }
