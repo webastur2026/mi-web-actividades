@@ -1,11 +1,11 @@
 'use client';
 
-import EditorEnriquecido from './EditorEnriquecido';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import EditorEnriquecido from './EditorEnriquecido';
 
 interface EnlaceInteres {
   titulo: string;
@@ -18,7 +18,8 @@ interface Actividad {
   slug: string;
   descripcion: string;
   descripcion_larga: string;
-  categoria: string;
+  categoria?: string;
+  categorias: string[];
   ubicacion_nombre: string;
   latitud: number | null;
   longitud: number | null;
@@ -47,13 +48,12 @@ export default function AdminDashboard() {
   const [editando, setEditando] = useState<Actividad | null>(null);
   const [subiendoImg, setSubiendoImg] = useState(false);
 
-  // Formulario base
   const [formData, setFormData] = useState<Actividad>({
     titulo: '',
     slug: '',
     descripcion: '',
     descripcion_larga: '',
-    categoria: CATEGORIAS_PREDEFINIDAS[0],
+    categorias: [],
     ubicacion_nombre: '',
     latitud: null,
     longitud: null,
@@ -88,7 +88,13 @@ export default function AdminDashboard() {
       .from('actividades')
       .select('*')
       .order('created_at', { ascending: false });
-    if (data) setActividades(data);
+    if (data) {
+      const mapeadas = data.map((act) => ({
+        ...act,
+        categorias: act.categorias || (act.categoria ? [act.categoria] : []),
+      }));
+      setActividades(mapeadas);
+    }
     setCargando(false);
   }
 
@@ -117,7 +123,6 @@ export default function AdminDashboard() {
     }));
   };
 
-  // Subir fotos a Supabase Storage
   const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -181,6 +186,7 @@ export default function AdminDashboard() {
     setEditando(act);
     setFormData({
       ...act,
+      categorias: act.categorias || (act.categoria ? [act.categoria] : []),
       imagenes: act.imagenes || [],
       enlaces: act.enlaces || [],
     });
@@ -194,7 +200,7 @@ export default function AdminDashboard() {
       slug: '',
       descripcion: '',
       descripcion_larga: '',
-      categoria: CATEGORIAS_PREDEFINIDAS[0],
+      categorias: [],
       ubicacion_nombre: '',
       latitud: null,
       longitud: null,
@@ -214,14 +220,12 @@ export default function AdminDashboard() {
     const payload = {
       ...formData,
       slug: formData.slug || generarSlug(formData.titulo),
+      categoria: formData.categorias.length > 0 ? formData.categorias[0] : null,
       imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
     };
 
     if (editando?.id) {
-      await supabase
-        .from('actividades')
-        .update(payload)
-        .eq('id', editando.id);
+      await supabase.from('actividades').update(payload).eq('id', editando.id);
     } else {
       await supabase.from('actividades').insert([payload]);
     }
@@ -232,10 +236,7 @@ export default function AdminDashboard() {
 
   async function togglePublicado(act: Actividad) {
     if (!act.id) return;
-    await supabase
-      .from('actividades')
-      .update({ publicado: !act.publicado })
-      .eq('id', act.id);
+    await supabase.from('actividades').update({ publicado: !act.publicado }).eq('id', act.id);
     cargarActividades();
   }
 
@@ -246,19 +247,15 @@ export default function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen py-8 px-4 sm:px-8 bg-[#FAFAF7]">
+    <main className="min-h-screen py-8 px-4 sm:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* Cabecera Admin */}
         <header className="bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="relative w-12 h-12">
               <Image src="/logo.png" alt="Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#4A3728] font-heading">
-                Panel de Gestión
-              </h1>
+              <h1 className="text-2xl font-bold text-[#4A3728] font-heading">Panel de Gestión</h1>
               <p className="text-xs text-[#6B5340]">El sol y la mariposa</p>
             </div>
           </div>
@@ -280,7 +277,6 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Formulario Crear / Editar */}
         <section className="bg-white p-6 sm:p-8 rounded-2xl border border-[#EBF2E8] shadow-sm space-y-6">
           <div className="flex justify-between items-center pb-4 border-b border-[#EBF2E8]">
             <h2 className="text-xl font-bold text-[#4A3728] font-heading">
@@ -298,36 +294,58 @@ export default function AdminDashboard() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#4A3728] mb-1">
-                  Título de la actividad *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.titulo}
-                  onChange={handleTituloChange}
-                  className="w-full p-2.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
-                  placeholder="Ej: Ruta a la Cascada del Maza"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-[#4A3728] mb-1">
+                Título de la actividad *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.titulo}
+                onChange={handleTituloChange}
+                className="w-full p-2.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
+                placeholder="Ej: Ruta a la Cascada del Maza"
+              />
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#4A3728] mb-1">
-                  Categoría
-                </label>
-                <select
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  className="w-full p-2.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
-                >
-                  {CATEGORIAS_PREDEFINIDAS.map((cat) => (
-                    <option key={cat} value={cat}>
+            <div>
+              <label className="block text-xs font-bold text-[#4A3728] mb-2">
+                Categorías (selección múltiple)
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-[#FAFAF7] p-3 rounded-xl border border-[#EBF2E8]">
+                {CATEGORIAS_PREDEFINIDAS.map((cat) => {
+                  const seleccionada = formData.categorias?.includes(cat);
+                  return (
+                    <label
+                      key={cat}
+                      className={`flex items-center gap-2 text-xs font-semibold p-2.5 rounded-lg cursor-pointer transition-colors border ${
+                        seleccionada
+                          ? 'bg-[#EBF2E8] text-[#1FA4B6] border-[#1FA4B6]'
+                          : 'bg-white text-[#6B5340] border-[#EBF2E8] hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={seleccionada}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              categorias: [...(prev.categorias || []), cat],
+                            }));
+                          } else {
+                            setFormData((prev) => ({
+                              ...prev,
+                              categorias: (prev.categorias || []).filter((c) => c !== cat),
+                            }));
+                          }
+                        }}
+                        className="accent-[#1FA4B6]"
+                      />
                       {cat}
-                    </option>
-                  ))}
-                </select>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -368,25 +386,23 @@ export default function AdminDashboard() {
                 value={formData.descripcion}
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                 className="w-full p-2.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
-                placeholder="Breve resumen de 2 líneas para el buscador..."
+                placeholder="Breve resumen para la tarjeta..."
               />
             </div>
 
-{/* Antes era un <textarea> */}
-<div>
-  <label className="block text-xs font-bold text-[#4A3728] mb-1">
-    Descripción Detallada (Ficha completa)
-  </label>
-  <EditorEnriquecido
-    content={formData.descripcion_larga}
-    onChange={(html) => setFormData((prev) => ({ ...prev, descripcion_larga: html }))}
-  />
-</div>
+            <div>
+              <label className="block text-xs font-bold text-[#4A3728] mb-1">
+                Descripción Detallada (Ficha completa)
+              </label>
+              <EditorEnriquecido
+                content={formData.descripcion_larga}
+                onChange={(html) => setFormData((prev) => ({ ...prev, descripcion_larga: html }))}
+              />
+            </div>
 
-            {/* Galería de imágenes */}
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
               <label className="block text-xs font-bold text-[#4A3728]">
-                📷 Galería de Fotos (Múltiples imágenes)
+                📷 Galería de Fotos
               </label>
               <input
                 type="file"
@@ -406,7 +422,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => eliminarImagen(idx)}
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-xs hover:scale-110 transition-transform"
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-sm"
                       >
                         ✕
                       </button>
@@ -416,10 +432,9 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Enlaces de Interés */}
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
               <label className="block text-xs font-bold text-[#4A3728]">
-                🔗 Enlaces de Interés (Wikiloc, Menú de Restaurante, Descargas...)
+                🔗 Enlaces de Interés
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -463,7 +478,6 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Datos de contacto y coordenadas */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold text-[#4A3728] mb-1">Teléfono</label>
@@ -497,7 +511,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Botón Guardar */}
             <button
               type="submit"
               className="w-full bg-[#F48C2E] hover:bg-[#E96D27] text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm"
@@ -507,7 +520,6 @@ export default function AdminDashboard() {
           </form>
         </section>
 
-        {/* Listado de Actividades Existentes */}
         <section className="bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm space-y-4">
           <h2 className="text-xl font-bold text-[#4A3728] font-heading">
             📋 Actividades Creadas ({actividades.length})
@@ -522,9 +534,13 @@ export default function AdminDashboard() {
               {actividades.map((act) => (
                 <div key={act.id} className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-[#1FA4B6] bg-[#EBF2E8] px-2 py-0.5 rounded-md uppercase">
-                      {act.categoria}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {act.categorias?.map((cat) => (
+                        <span key={cat} className="text-[10px] font-bold text-[#1FA4B6] bg-[#EBF2E8] px-2 py-0.5 rounded-md uppercase">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
                     <h3 className="font-bold text-[#4A3728] text-base">{act.titulo}</h3>
                     <p className="text-xs text-[#6B5340]">📍 {act.ubicacion_nombre || 'Sin ubicación'}</p>
                   </div>
@@ -558,7 +574,6 @@ export default function AdminDashboard() {
             </div>
           )}
         </section>
-
       </div>
     </main>
   );
