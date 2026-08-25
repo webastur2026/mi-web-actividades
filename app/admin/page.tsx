@@ -1,5 +1,6 @@
 'use client';
 
+import EditorEnriquecido from './EditorEnriquecido';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -371,18 +372,16 @@ export default function AdminDashboard() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#4A3728] mb-1">
-                Descripción Detallada (Ficha completa)
-              </label>
-              <textarea
-                rows={4}
-                value={formData.descripcion_larga}
-                onChange={(e) => setFormData({ ...formData, descripcion_larga: e.target.value })}
-                className="w-full p-2.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm text-[#4A3728] outline-none focus:ring-2 focus:ring-[#1FA4B6]"
-                placeholder="Explicación completa, qué llevar, edades recomendadas, recomendaciones..."
-              />
-            </div>
+{/* Antes era un <textarea> */}
+<div>
+  <label className="block text-xs font-bold text-[#4A3728] mb-1">
+    Descripción Detallada (Ficha completa)
+  </label>
+  <EditorEnriquecido
+    content={formData.descripcion_larga}
+    onChange={(html) => setFormData((prev) => ({ ...prev, descripcion_larga: html }))}
+  />
+</div>
 
             {/* Galería de imágenes */}
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">

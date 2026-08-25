@@ -113,16 +113,17 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {actividad.descripcion_larga && (
-                <div>
-                  <h2 className="text-xl font-bold text-[#4A3728] font-heading mb-3">
-                    Detalles de la actividad
-                  </h2>
-                  <div className="whitespace-pre-line leading-relaxed text-[#6B5340] text-sm sm:text-base">
-                    {actividad.descripcion_larga}
-                  </div>
-                </div>
-              )}
+{actividad.descripcion_larga && (
+  <div>
+    <h2 className="text-xl font-bold text-[#4A3728] font-heading mb-3">
+      Detalles de la actividad
+    </h2>
+    <div
+      className="prose max-w-none text-[#6B5340] text-sm sm:text-base leading-relaxed"
+      dangerouslySetInnerHTML={{ __html: actividad.descripcion_larga }}
+    />
+  </div>
+)}
 
               {/* Enlaces de interés estilo tarjeta limpia */}
               {enlacesInteres.length > 0 && (
