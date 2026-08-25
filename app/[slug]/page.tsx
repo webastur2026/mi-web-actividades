@@ -45,6 +45,13 @@ export default async function ActividadDetallePage({ params }: Props) {
 
   const enlacesInteres: EnlaceInteres[] = actividad.enlaces || [];
 
+  // Obtener todas las categorías (soporte múltiple y antiguo)
+  const listaCategorias: string[] = actividad.categorias && actividad.categorias.length > 0
+    ? actividad.categorias
+    : actividad.categoria
+    ? [actividad.categoria]
+    : [];
+
   const enlaceGoogleMaps = actividad.latitud && actividad.longitud
     ? `https://www.google.com/maps/search/?api=1&query=${actividad.latitud},${actividad.longitud}`
     : null;
@@ -55,7 +62,7 @@ export default async function ActividadDetallePage({ params }: Props) {
     <main className="min-h-screen py-8 px-4 sm:px-8">
       <div className="max-w-3xl mx-auto">
         
-        {/* Encabezado con Logo para volver al inicio */}
+        {/* Encabezado con Logo */}
         <header className="mb-6 text-center flex flex-col items-center">
           <Link href="/" className="group inline-block">
             <div className="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
@@ -76,7 +83,6 @@ export default async function ActividadDetallePage({ params }: Props) {
         {/* Tarjeta de Contenido */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#EBF2E8] overflow-hidden">
           
-          {/* Galería Interactiva */}
           <GaleriaImagenes imagenes={listaImagenes} titulo={actividad.titulo} />
 
           <div className="p-6 sm:p-8">
@@ -90,10 +96,18 @@ export default async function ActividadDetallePage({ params }: Props) {
               <BotonCompartir titulo={actividad.titulo} />
             </div>
 
-            {actividad.categoria && (
-              <span className="text-xs font-bold text-[#1FA4B6] uppercase tracking-wider bg-[#EBF2E8] px-3 py-1 rounded-lg mb-3 inline-block">
-                {actividad.categoria}
-              </span>
+            {/* Listado de todas las categorías asignadas */}
+            {listaCategorias.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {listaCategorias.map((cat) => (
+                  <span
+                    key={cat}
+                    className="text-xs font-bold text-[#1FA4B6] uppercase tracking-wider bg-[#EBF2E8] px-3 py-1 rounded-lg"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
             )}
 
             <h1 className="text-3xl sm:text-4xl font-bold text-[#4A3728] font-heading mb-1">
@@ -113,19 +127,19 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-{actividad.descripcion_larga && (
-  <div>
-    <h2 className="text-xl font-bold text-[#4A3728] font-heading mb-3">
-      Detalles de la actividad
-    </h2>
-    <div
-      className="prose max-w-none text-[#6B5340] text-sm sm:text-base leading-relaxed"
-      dangerouslySetInnerHTML={{ __html: actividad.descripcion_larga }}
-    />
-  </div>
-)}
+              {actividad.descripcion_larga && (
+                <div>
+                  <h2 className="text-xl font-bold text-[#4A3728] font-heading mb-3">
+                    Detalles de la actividad
+                  </h2>
+                  <div
+                    className="prose max-w-none text-[#6B5340] text-sm sm:text-base leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: actividad.descripcion_larga }}
+                  />
+                </div>
+              )}
 
-              {/* Enlaces de interés estilo tarjeta limpia */}
+              {/* Enlaces de interés */}
               {enlacesInteres.length > 0 && (
                 <div className="border-t border-[#EBF2E8] pt-6">
                   <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3">
@@ -154,7 +168,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Datos de contacto */}
+              {/* Contacto */}
               {(actividad.telefono || actividad.email || webUrlValida) && (
                 <div className="bg-[#FAFAF7] p-5 rounded-2xl border border-[#EBF2E8] flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <span className="font-bold text-[#4A3728] text-sm">
@@ -191,7 +205,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Mapa interactivo */}
+              {/* Mapa */}
               {actividad.latitud && actividad.longitud && (
                 <div className="border-t border-[#EBF2E8] pt-6">
                   <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3">
