@@ -58,7 +58,7 @@ export default async function ActividadDetallePage({ params }: Props) {
         {/* Encabezado con Logo para volver al inicio */}
         <header className="mb-6 text-center flex flex-col items-center">
           <Link href="/" className="group inline-block">
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto drop-shadow-xs group-hover:scale-105 transition-transform duration-300">
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
               <Image
                 src="/logo.png"
                 alt="Logo El Sol y la Mariposa"
@@ -74,7 +74,7 @@ export default async function ActividadDetallePage({ params }: Props) {
         </header>
 
         {/* Tarjeta de Contenido */}
-        <div className="bg-white rounded-2xl shadow-xs border border-[#EBF2E8] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#EBF2E8] overflow-hidden">
           
           {/* Galería Interactiva */}
           <GaleriaImagenes imagenes={listaImagenes} titulo={actividad.titulo} />
@@ -124,7 +124,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Enlaces de interés con diseño limpio de botón */}
+              {/* Enlaces de interés estilo tarjeta limpia */}
               {enlacesInteres.length > 0 && (
                 <div className="border-t border-[#EBF2E8] pt-6">
                   <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3">
@@ -140,10 +140,10 @@ export default async function ActividadDetallePage({ params }: Props) {
                           href={urlValida}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-between p-3.5 bg-[#1FA4B6] hover:bg-[#188897] text-white rounded-xl font-bold text-sm transition-all shadow-xs group"
+                          className="flex items-center justify-between p-3.5 bg-[#FAFAF7] hover:bg-[#F48C2E] text-[#4A3728] hover:text-white border border-[#EBF2E8] hover:border-[#F48C2E] rounded-xl font-bold text-sm transition-all duration-200 shadow-sm group"
                         >
                           <span className="truncate pr-2">🔗 {item.titulo}</span>
-                          <span className="text-xs bg-white/20 px-2 py-1 rounded-md shrink-0">
+                          <span className="text-xs bg-[#1FA4B6] group-hover:bg-white text-white group-hover:text-[#F48C2E] px-2.5 py-1 rounded-lg transition-colors shrink-0">
                             Abrir ↗
                           </span>
                         </a>
@@ -155,7 +155,7 @@ export default async function ActividadDetallePage({ params }: Props) {
 
               {/* Datos de contacto */}
               {(actividad.telefono || actividad.email || webUrlValida) && (
-                <div className="bg-[#EBF2E8]/60 p-5 rounded-2xl border border-[#A8C298]/30 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div className="bg-[#FAFAF7] p-5 rounded-2xl border border-[#EBF2E8] flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <span className="font-bold text-[#4A3728] text-sm">
                     Información y Reservas:
                   </span>
@@ -163,7 +163,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                     {actividad.telefono && (
                       <a
                         href={`tel:${actividad.telefono}`}
-                        className="bg-white border border-[#EBF2E8] text-[#1FA4B6] font-bold px-3 py-1.5 rounded-xl hover:bg-[#FAFAF7] transition-colors shadow-xs"
+                        className="bg-white border border-[#EBF2E8] text-[#1FA4B6] font-bold px-3 py-1.5 rounded-xl hover:bg-[#EBF2E8] transition-colors shadow-sm"
                       >
                         📞 {actividad.telefono}
                       </a>
@@ -171,7 +171,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                     {actividad.email && (
                       <a
                         href={`mailto:${actividad.email}`}
-                        className="bg-white border border-[#EBF2E8] text-[#1FA4B6] font-bold px-3 py-1.5 rounded-xl hover:bg-[#FAFAF7] transition-colors shadow-xs"
+                        className="bg-white border border-[#EBF2E8] text-[#1FA4B6] font-bold px-3 py-1.5 rounded-xl hover:bg-[#EBF2E8] transition-colors shadow-sm"
                       >
                         ✉️ {actividad.email}
                       </a>
@@ -181,7 +181,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                         href={webUrlValida}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-[#F48C2E] hover:bg-[#E96D27] text-white font-bold px-3.5 py-1.5 rounded-xl transition-colors shadow-xs"
+                        className="bg-[#F48C2E] hover:bg-[#E96D27] text-white font-bold px-3.5 py-1.5 rounded-xl transition-colors shadow-sm"
                       >
                         🌐 Web Oficial ↗
                       </a>
