@@ -68,13 +68,13 @@ export default function HomePage() {
     <main className="min-h-screen py-6 px-4 sm:px-8 bg-[#FAFAF7]">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Cabecera Principal Equilibrada y Compacta */}
+        {/* Cabecera Principal Compacta */}
         <header className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EBF2E8] shadow-sm text-center flex flex-col items-center justify-center relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#EBF2E8] rounded-full blur-2xl opacity-60 pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#F48C2E]/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center">
-            {/* Logo Mediano (56px / 64px) */}
+            {/* Logo Mediano */}
             <div className="relative w-14 h-14 sm:w-16 sm:h-16 mb-2 transition-transform hover:scale-105 duration-300">
               <Image
                 src="/logo.png"
@@ -90,8 +90,9 @@ export default function HomePage() {
               El sol y la mariposa
             </h1>
             
+            {/* Subtítulo exacto */}
             <p className="text-xs sm:text-sm text-[#6B5340] font-medium mt-1 max-w-md">
-              Actividades, rutas y experiencias para disfrutar en familia
+              El mejor ocio para disfrutar con los peques de la casa.
             </p>
           </div>
         </header>
