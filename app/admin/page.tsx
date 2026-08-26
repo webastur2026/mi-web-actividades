@@ -254,6 +254,8 @@ export default function AdminDashboard() {
   return (
     <main className="min-h-screen py-8 px-4 sm:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* Cabecera Principal */}
         <header className="bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="relative w-12 h-12">
@@ -265,7 +267,13 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/mensajes"
+              className="text-xs font-bold text-[#1FA4B6] bg-[#EBF2E8] px-3.5 py-2 rounded-xl hover:bg-[#FAFAF7] transition-colors flex items-center gap-1.5"
+            >
+              ✉️ Mensajes
+            </Link>
             <Link
               href="/"
               target="_blank"
@@ -282,6 +290,26 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {/* Banner destacado: Acceso a la Bandeja de Mensajes */}
+        <div className="bg-white p-5 rounded-2xl border border-[#EBF2E8] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EBF2E8] flex items-center justify-center text-xl shrink-0">
+              ✉️
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#4A3728]">Bandeja de Contacto</h2>
+              <p className="text-xs text-[#6B5340]">Revisa las propuestas y fotos enviadas por las familias desde el formulario.</p>
+            </div>
+          </div>
+          <Link
+            href="/admin/mensajes"
+            className="text-xs font-bold text-white bg-[#1FA4B6] px-4 py-2.5 rounded-xl hover:bg-[#188897] transition-colors shrink-0"
+          >
+            Ver mensajes recibidos ↗
+          </Link>
+        </div>
+
+        {/* Formulario de Crear / Editar Actividad */}
         <section className="bg-white p-6 sm:p-8 rounded-2xl border border-[#EBF2E8] shadow-sm space-y-6">
           <div className="flex justify-between items-center pb-4 border-b border-[#EBF2E8]">
             <h2 className="text-xl font-bold text-[#4A3728] font-heading">
@@ -405,7 +433,7 @@ export default function AdminDashboard() {
               />
             </div>
 
-            {/* Nuevo campo de Wikiloc */}
+            {/* Campo Wikiloc */}
             <div className="bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
               <label className="block text-xs font-bold text-[#4A3728] mb-1">
                 🗺️ Código o Enlace de Embebido Wikiloc (Opcional)
@@ -542,6 +570,7 @@ export default function AdminDashboard() {
           </form>
         </section>
 
+        {/* Listado de Actividades */}
         <section className="bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm space-y-4">
           <h2 className="text-xl font-bold text-[#4A3728] font-heading">
             📋 Actividades Creadas ({actividades.length})
@@ -596,6 +625,7 @@ export default function AdminDashboard() {
             </div>
           )}
         </section>
+
       </div>
     </main>
   );
