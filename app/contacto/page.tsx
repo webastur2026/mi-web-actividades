@@ -3,7 +3,6 @@ import Image from 'next/image';
 
 export const metadata = {
   title: 'Contacto - El sol y la mariposa',
-  description: 'Ponte en contacto con el equipo de El sol y la mariposa.',
 };
 
 export default function ContactoPage() {
@@ -12,62 +11,57 @@ export default function ContactoPage() {
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* Navegación Superior */}
-        <nav className="bg-white/90 backdrop-blur-md border border-[#EBF2E8] px-5 py-3 rounded-2xl shadow-sm flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative w-9 h-9 shrink-0">
-              <Image 
-                src="/logo.png" 
-                alt="Logo El Sol y la Mariposa" 
-                fill 
-                className="object-contain group-hover:scale-105 transition-transform" 
-                priority 
-              />
+        <nav className="bg-white border border-[#EBF2E8] px-5 py-3 rounded-2xl shadow-sm flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="relative w-8 h-8">
+              <Image src="/logo.png" alt="Logo" fill className="object-contain" priority />
             </div>
-            <span className="font-heading font-bold text-sm sm:text-base text-[#4A3728] group-hover:text-[#1FA4B6] transition-colors">
+            <span className="font-heading font-bold text-sm text-[#4A3728]">
               El sol y la mariposa
             </span>
           </Link>
-
-          <Link
-            href="/"
-            className="text-xs font-bold text-[#1FA4B6] bg-[#EBF2E8] px-3.5 py-2 rounded-xl hover:bg-[#FAFAF7] transition-colors"
-          >
+          <Link href="/" className="text-xs font-bold text-[#1FA4B6] bg-[#EBF2E8] px-3.5 py-2 rounded-xl">
             ← Volver al inicio
           </Link>
         </nav>
 
-        {/* Tarjeta de Contacto */}
+        {/* Contenido y Formulario */}
         <article className="bg-white p-6 sm:p-10 rounded-3xl border border-[#EBF2E8] shadow-sm space-y-6">
-          <header className="border-b border-[#EBF2E8] pb-4">
-            <h1 className="text-3xl font-bold text-[#4A3728] font-heading">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#4A3728] font-heading">
               Contacto
             </h1>
-            <p className="text-sm text-[#6B5340] mt-1">
-              ¿Tienes alguna duda, propuesta o sugerencia de actividad? Escríbenos.
+            <p className="text-sm text-[#6B5340] mt-2">
+              ¿Tienes alguna propuesta, quieres sugerir una actividad o has notado algún cambio en nuestros planes? Escríbenos y envíanos tus fotos.
             </p>
-          </header>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-[#FAFAF7] p-5 rounded-2xl border border-[#EBF2E8] space-y-2">
-              <span className="text-2xl">✉️</span>
-              <h3 className="font-bold text-[#4A3728] text-base">Correo Electrónico</h3>
-              <p className="text-xs text-[#6B5340]">Para consultas generales o colaboraciones:</p>
-              <a 
-                href="mailto:info@elsolylamariposa.com" 
-                className="inline-block text-sm font-bold text-[#1FA4B6] hover:underline"
-              >
-                info@elsolylamariposa.com
-              </a>
-            </div>
-
-            <div className="bg-[#FAFAF7] p-5 rounded-2xl border border-[#EBF2E8] space-y-2">
-              <span className="text-2xl">📣</span>
-              <h3 className="font-bold text-[#4A3728] text-base">¿Tienes un negocio o evento?</h3>
-              <p className="text-xs text-[#6B5340]">
-                Si organizas actividades infantiles o familiares, ponte en contacto para incluirlas.
-              </p>
-            </div>
           </div>
+
+          <form className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label htmlFor="nombre" className="text-xs font-bold text-[#4A3728]">Tu nombre</label>
+                <input type="text" id="nombre" name="nombre" required className="w-full p-3 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1FA4B6]" placeholder="Ej. Laura" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="email" className="text-xs font-bold text-[#4A3728]">Tu email</label>
+                <input type="email" id="email" name="email" required className="w-full p-3 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1FA4B6]" placeholder="correo@ejemplo.com" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="mensaje" className="text-xs font-bold text-[#4A3728]">Mensaje</label>
+              <textarea id="mensaje" name="mensaje" rows={4} required className="w-full p-3 bg-[#FAFAF7] border border-[#EBF2E8] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1FA4B6]" placeholder="Cuéntanos..." />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="adjunto" className="text-xs font-bold text-[#4A3728]">Adjuntar imágenes (opcional)</label>
+              <input type="file" id="adjunto" name="adjunto" accept="image/*" multiple className="w-full text-sm text-[#6B5340] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#EBF2E8] file:text-[#1FA4B6] hover:file:bg-[#FAFAF7] transition-colors" />
+            </div>
+
+            <button type="submit" className="w-full sm:w-auto bg-[#1FA4B6] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-[#188897] transition-colors">
+              Enviar mensaje
+            </button>
+          </form>
         </article>
 
       </div>
