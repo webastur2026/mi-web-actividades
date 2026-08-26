@@ -67,26 +67,33 @@ export default async function ActividadDetallePage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen py-8 px-4 sm:px-8">
+    <main className="min-h-screen py-6 px-4 sm:px-8">
       <div className="max-w-3xl mx-auto">
         
-        {/* Encabezado con Logo */}
-        <header className="mb-6 text-center flex flex-col items-center">
-          <Link href="/" className="group inline-block">
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
-              <Image
-                src="/logo.png"
-                alt="Logo El Sol y la Mariposa"
-                fill
-                className="object-contain"
-                priority
+        {/* Encabezado Opción 3: Barra de Navegación Superior */}
+        <nav className="mb-6 bg-white/90 backdrop-blur-md border border-[#EBF2E8] px-5 py-3 rounded-2xl shadow-sm flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative w-9 h-9 shrink-0">
+              <Image 
+                src="/logo.png" 
+                alt="Logo El Sol y la Mariposa" 
+                fill 
+                className="object-contain group-hover:scale-105 transition-transform" 
+                priority 
               />
             </div>
-            <span className="block text-xl font-bold text-[#4A3728] font-heading mt-1 group-hover:text-[#1FA4B6] transition-colors">
+            <span className="font-heading font-bold text-sm sm:text-base text-[#4A3728] group-hover:text-[#1FA4B6] transition-colors">
               El sol y la mariposa
             </span>
           </Link>
-        </header>
+
+          <Link
+            href="/"
+            className="text-xs font-bold text-white bg-[#F48C2E] hover:bg-[#E96D27] px-4 py-2 rounded-xl transition-colors shadow-sm"
+          >
+            Ver más actividades
+          </Link>
+        </nav>
 
         {/* Tarjeta de Contenido */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#EBF2E8] overflow-hidden">
