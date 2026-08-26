@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
 
           {/* Tarjeta: Gestión de Actividades */}
           <Link
-            href="/admin/nueva"
+            href="/admin/nueva-actividad"
             className="group bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
           >
             <div className="flex items-center justify-between">
