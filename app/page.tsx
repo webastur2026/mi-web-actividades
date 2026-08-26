@@ -1,6 +1,7 @@
-import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-import ListaActividades from './listaActividades';
+import Image from 'next/image';
+import Link from 'next/link';
+import FiltrosYLista from './FiltrosYLista';
 
 export const revalidate = 0;
 
@@ -11,31 +12,45 @@ export default async function HomePage() {
     .eq('publicado', true)
     .order('created_at', { ascending: false });
 
+  const lista = actividades || [];
+
   return (
-    <main className="min-h-screen py-8 px-4 sm:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Encabezado Principal con Logo */}
-        <header className="mb-10 text-center flex flex-col items-center">
-          <div className="relative w-44 h-44 sm:w-56 sm:h-56 mb-3 drop-shadow-sm hover:scale-105 transition-transform duration-300">
-            <Image
-              src="/logo.png"
-              alt="Logo El Sol y la Mariposa"
-              fill
-              className="object-contain"
-              priority
-            />
+    <main className="min-h-screen py-6 px-4 sm:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        
+        {/* Cabecera Principal Equilibrada */}
+        <header className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EBF2E8] shadow-sm text-center flex flex-col items-center justify-center relative overflow-hidden">
+          {/* Adorno sutil de fondo */}
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#EBF2E8] rounded-full blur-2xl opacity-60 pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#F48C2E]/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Logo de tamaño mediano/proporcionado */}
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 mb-2 drop-shadow-sm transition-transform hover:scale-105 duration-300">
+              <Image
+                src="/logo.png"
+                alt="Logo El Sol y la Mariposa"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Título Principal */}
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#4A3728] font-heading tracking-tight">
+              El sol y la mariposa
+            </h1>
+            
+            {/* Subtítulo breve */}
+            <p className="text-xs sm:text-sm text-[#6B5340] font-medium mt-1 max-w-md">
+              Actividades, rutas y experiencias para disfrutar en familia
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-[#4A3728] font-heading tracking-tight">
-            El sol y la mariposa
-          </h1>
-          <p className="mt-2 text-base sm:text-lg text-[#6B5340] max-w-xl font-medium">
-            El mejor ocio para disfrutar con los peques de la casa
-          </p>
-          <div className="w-20 h-1 bg-[#F48C2E] rounded-full mt-4"></div>
         </header>
 
-        {/* Buscador y Listado Filtrable */}
-        <ListaActividades actividadesIniciales={actividades || []} />
+        {/* Buscador, Filtros y Listado de Actividades */}
+        <FiltrosYLista actividadesIniciales={lista} />
+
       </div>
     </main>
   );
