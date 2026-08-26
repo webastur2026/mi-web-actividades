@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
                 Publicar ↗
               </span>
             </div>
-            <div>
+            <div> 
               <h2 className="text-lg font-bold text-[#4A3728] font-heading">
                 Nueva Actividad
               </h2>
