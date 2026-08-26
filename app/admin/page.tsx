@@ -14,7 +14,7 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-[#6B5340] mt-1">
               Gestiona el contenido y los avisos de El sol y la mariposa.
             </p>
-          </div>
+          </div> 
           <Link
             href="/"
             className="text-xs font-bold text-[#1FA4B6] bg-[#EBF2E8] px-4 py-2.5 rounded-xl hover:bg-[#FAFAF7] transition-colors self-start sm:self-auto"
@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
 
           {/* Tarjeta: Gestión de Actividades */}
           <Link
-            href="/admin/nueva-actividad"
+            href="/admin/nueva"
             className="group bg-white p-6 rounded-2xl border border-[#EBF2E8] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
           >
             <div className="flex items-center justify-between">
