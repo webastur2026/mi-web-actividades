@@ -40,10 +40,13 @@ export default function QuienesSomosPage() {
               Por eso, nuestro compromiso es claro: todas las rutas, talleres y actividades que publicamos aquí están previamente comprobadas y realizadas por nosotros.
             </div>
 
-            <p>
-              Queremos ayudarte a encontrar fácilmente planes de calidad y sin sorpresas desagradables. Aún así, la naturaleza y los negocios cambian. Te agradecemos enormemente que, si visitas un lugar y notas alguna modificación (un sendero cerrado, un cambio de horario o cualquier error), nos lo comuniques para mantener la web siempre actualizada y seguir ayudando a otras familias.
-            </p>
-          </div>
+<p>
+  Queremos ayudarte a encontrar fácilmente planes de calidad y sin sorpresas desagradables. Aún así, la naturaleza y los negocios cambian. Te agradecemos enormemente que, si visitas un lugar y notas alguna modificación (un sendero cerrado, un cambio de horario o cualquier error),{' '}
+  <Link href="/contacto" className="text-[#1FA4B6] font-bold hover:underline transition-all">
+    nos lo comuniques
+  </Link>{' '}
+  para mantener la web siempre actualizada y seguir ayudando a otras familias.
+</p>          </div>
         </article>
 
       </div>
