@@ -10,6 +10,14 @@ export default function Footer() {
           El sol y la mariposa — El mejor ocio para disfrutar con los peques de la casa
         </p>
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-gray-600">
+          <Link href="/quienes-somos" className="hover:text-blue-600 transition-colors">
+            Quiénes somos
+          </Link>
+          <span>•</span>
+          <Link href="/contacto" className="hover:text-blue-600 transition-colors">
+            Contacto
+          </Link>
+          <span>•</span>
           <Link href="/aviso-legal" className="hover:text-blue-600 transition-colors">
             Aviso Legal
           </Link>
