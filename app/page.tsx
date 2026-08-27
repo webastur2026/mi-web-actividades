@@ -32,7 +32,6 @@ const CATEGORIAS = [
   'Ocio en Familia',
 ];
 
-// Función auxiliar para obtener la URL limpia de la imagen principal
 function obtenerUrlImagen(img: any): string {
   if (!img) return '/logo.png';
 
@@ -97,14 +96,14 @@ export default function HomePage() {
     <main className="min-h-screen py-6 px-4 sm:px-8 bg-[#FAFAF7]">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Cabecera Principal Compacta */}
-        <header className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EBF2E8] shadow-sm text-center flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#EBF2E8] rounded-full blur-2xl opacity-60 pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#F48C2E]/10 rounded-full blur-2xl pointer-events-none" />
+        {/* Cabecera Principal con Logo Extra Grande */}
+        <header className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EBF2E8] shadow-sm flex items-center justify-center relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-40 h-40 bg-[#EBF2E8] rounded-full blur-2xl opacity-60 pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#F48C2E]/10 rounded-full blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Logo Mediano */}
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 mb-2 transition-transform hover:scale-105 duration-300">
+          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 text-center sm:text-left">
+            {/* Columna 1: Logo Extra Grande (128px móvil / 176px escritorio) */}
+            <div className="relative w-32 h-32 sm:w-44 sm:h-44 shrink-0 transition-transform hover:scale-105 duration-300">
               <Image
                 src="/logo.png"
                 alt="Logo El Sol y la Mariposa"
@@ -114,15 +113,15 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Título Principal */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#4A3728] font-heading tracking-tight">
-              El sol y la mariposa
-            </h1>
-            
-            {/* Subtítulo exacto */}
-            <p className="text-xs sm:text-sm text-[#6B5340] font-medium mt-1 max-w-md">
-              El mejor ocio para disfrutar con los peques de la casa.
-            </p>
+            {/* Columna 2: Título y Subtítulo */}
+            <div className="flex flex-col justify-center space-y-1 sm:space-y-2">
+              <h1 className="text-3xl sm:text-5xl font-bold text-[#4A3728] font-heading tracking-tight leading-tight">
+                El sol y la mariposa
+              </h1>
+              <p className="text-sm sm:text-lg text-[#6B5340] font-medium max-w-md">
+                El mejor ocio para disfrutar con los peques de la casa.
+              </p>
+            </div>
           </div>
         </header>
 
