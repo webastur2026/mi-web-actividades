@@ -16,35 +16,10 @@ interface EnlaceInteres {
   url: string;
 }
 
-// Dentro de tu app/[slug]/page.tsx
-
-interface ImagenObjeto {
+export interface ImagenObjeto {
   url: string;
   fuente?: string;
 }
-
-// Al renderizar las imágenes de la actividad:
-{actividad.imagenes?.map((img: string | ImagenObjeto, idx: number) => {
-  const url = typeof img === 'string' ? img : img.url;
-  const fuente = typeof img === 'string' ? '' : img.fuente;
-
-  return (
-    <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm">
-      <img
-        src={url}
-        alt={actividad.titulo}
-        className="w-full h-72 object-cover"
-      />
-
-      {/* Etiqueta de fuente / autoría */}
-      {fuente && (
-        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-medium px-2.5 py-1 rounded-md backdrop-blur-sm">
-          📷 {fuente}
-        </span>
-      )}
-    </div>
-  );
-})}
 
 function formatearUrl(url: string | null): string | null {
   if (!url) return null;
@@ -67,7 +42,7 @@ export default async function ActividadDetallePage({ params }: Props) {
 
   if (!actividad) notFound();
 
-  const listaImagenes: string[] = actividad.imagenes && actividad.imagenes.length > 0
+  const listaImagenes: (string | ImagenObjeto)[] = actividad.imagenes && actividad.imagenes.length > 0
     ? actividad.imagenes
     : actividad.imagen_url
     ? [actividad.imagen_url]
@@ -100,7 +75,7 @@ export default async function ActividadDetallePage({ params }: Props) {
     <main className="min-h-screen py-6 px-4 sm:px-8">
       <div className="max-w-3xl mx-auto">
         
-        {/* Encabezado Opción 3: Barra de Navegación Superior */}
+        {/* Encabezado: Barra de Navegación Superior */}
         <nav className="mb-6 bg-white/90 backdrop-blur-md border border-[#EBF2E8] px-5 py-3 rounded-2xl shadow-sm flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative w-9 h-9 shrink-0">
@@ -141,7 +116,7 @@ export default async function ActividadDetallePage({ params }: Props) {
               <BotonCompartir titulo={actividad.titulo} />
             </div>
 
-            {/* Listado de todas las categorías asignadas */}
+            {/* Listado de categorías */}
             {listaCategorias.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {listaCategorias.map((cat) => (
@@ -269,7 +244,7 @@ export default async function ActividadDetallePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Mapa de Google / OpenStreetMap alternativo */}
+              {/* Ubicación Mapa */}
               {actividad.latitud && actividad.longitud && (
                 <div className="border-t border-[#EBF2E8] pt-6">
                   <h2 className="text-lg font-bold text-[#4A3728] font-heading mb-3">
