@@ -16,6 +16,36 @@ interface EnlaceInteres {
   url: string;
 }
 
+// Dentro de tu app/[slug]/page.tsx
+
+interface ImagenObjeto {
+  url: string;
+  fuente?: string;
+}
+
+// Al renderizar las imágenes de la actividad:
+{actividad.imagenes?.map((img: string | ImagenObjeto, idx: number) => {
+  const url = typeof img === 'string' ? img : img.url;
+  const fuente = typeof img === 'string' ? '' : img.fuente;
+
+  return (
+    <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm">
+      <img
+        src={url}
+        alt={actividad.titulo}
+        className="w-full h-72 object-cover"
+      />
+
+      {/* Etiqueta de fuente / autoría */}
+      {fuente && (
+        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-medium px-2.5 py-1 rounded-md backdrop-blur-sm">
+          📷 {fuente}
+        </span>
+      )}
+    </div>
+  );
+})}
+
 function formatearUrl(url: string | null): string | null {
   if (!url) return null;
   const urlLimpia = url.trim();

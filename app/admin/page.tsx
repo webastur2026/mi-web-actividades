@@ -12,6 +12,12 @@ interface EnlaceInteres {
   url: string;
 }
 
+interface ImagenObjeto {
+  url: string;
+  fuente: string;
+}
+
+
 interface Actividad {
   id?: string;
   titulo: string;
@@ -29,7 +35,7 @@ interface Actividad {
   web_url: string;
   wikiloc_embed?: string;
   publicado: boolean;
-  imagenes: string[];
+imagenes: (string | ImagenObjeto)[];
   enlaces: EnlaceInteres[];
 }
 
@@ -130,14 +136,13 @@ const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!files || files.length === 0) return;
 
   setSubiendoImg(true);
-  const nuevasUrls: string[] = [];
+  const nuevasImagenes: ImagenObjeto[] = [];
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-    // Cambiado 'actividades' por 'actividades-imagenes'
     const { data, error } = await supabase.storage
       .from('actividades-imagenes')
       .upload(fileName, file, {
@@ -152,13 +157,13 @@ const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
         .from('actividades-imagenes')
         .getPublicUrl(data.path);
 
-      nuevasUrls.push(urlData.publicUrl);
+      nuevasImagenes.push({ url: urlData.publicUrl, fuente: '' });
     }
   }
 
   setFormData((prev) => ({
     ...prev,
-    imagenes: [...prev.imagenes, ...nuevasUrls],
+    imagenes: [...prev.imagenes, ...nuevasImagenes],
   }));
   setSubiendoImg(false);
 };
@@ -470,23 +475,50 @@ const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
               />
               {subiendoImg && <p className="text-xs text-[#F48C2E] font-bold">Subiendo fotos...</p>}
 
-              {formData.imagenes.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-2">
-                  {formData.imagenes.map((url, idx) => (
-                    <div key={idx} className="relative group h-20 bg-gray-100 rounded-lg overflow-hidden border border-[#EBF2E8]">
-                      <img src={url} alt="subida" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => eliminarImagen(idx)}
-                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-sm"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+{/* Galería de fotos con autoría */}
+{formData.imagenes.length > 0 && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+    {formData.imagenes.map((img, idx) => {
+      const esString = typeof img === 'string';
+      const url = esString ? (img as string) : img.url;
+      const fuente = esString ? '' : img.fuente || '';
+
+      return (
+        <div key={idx} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-[#EBF2E8]">
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-[#EBF2E8]">
+            <img src={url} alt="Vista previa" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <label className="block text-[10px] font-bold text-[#6B5340] mb-0.5">
+              Fuente / Autor de la foto
+            </label>
+            <input
+              type="text"
+              value={fuente}
+              onChange={(e) => {
+                const nuevaFuente = e.target.value;
+                setFormData((prev) => {
+                  const nuevas = [...prev.imagenes];
+                  nuevas[idx] = { url, fuente: nuevaFuente };
+                  return { ...prev, imagenes: nuevas };
+                });
+              }}
+              placeholder="Ej: Turismo Asturias / Propia"
+              className="w-full p-1.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-lg text-xs text-[#4A3728] outline-none focus:ring-1 focus:ring-[#1FA4B6]"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => eliminarImagen(idx)}
+            className="text-red-500 font-bold text-xs p-1 hover:bg-red-50 rounded shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      );
+    })}
+  </div>
+)}            </div>
 
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
               <label className="block text-xs font-bold text-[#4A3728]">
