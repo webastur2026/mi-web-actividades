@@ -5,6 +5,11 @@ import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import Link from 'next/link';
 
+interface ImagenObjeto {
+  url: string;
+  fuente?: string;
+}
+
 interface Actividad {
   id: string;
   titulo: string;
@@ -13,7 +18,7 @@ interface Actividad {
   categoria?: string;
   categorias?: string[];
   ubicacion_nombre: string;
-  imagenes?: string[];
+  imagenes?: (string | ImagenObjeto)[];
   imagen_url?: string;
 }
 
@@ -26,6 +31,30 @@ const CATEGORIAS = [
   'Parques y Granja Escuela',
   'Ocio en Familia',
 ];
+
+// Función auxiliar para obtener la URL limpia de la imagen principal
+function obtenerUrlImagen(img: any): string {
+  if (!img) return '/logo.png';
+
+  if (typeof img === 'object' && img !== null) {
+    return img.url || '/logo.png';
+  }
+
+  if (typeof img === 'string') {
+    const textoLimpio = img.trim();
+    if (textoLimpio.startsWith('{')) {
+      try {
+        const json = JSON.parse(textoLimpio);
+        return json.url || '/logo.png';
+      } catch {
+        return img;
+      }
+    }
+    return img;
+  }
+
+  return '/logo.png';
+}
 
 export default function HomePage() {
   const [actividades, setActividades] = useState<Actividad[]>([]);
@@ -140,11 +169,12 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {actividadesFiltradas.map((act) => {
-              const imagen =
+              const primeraImg =
                 act.imagenes && act.imagenes.length > 0
                   ? act.imagenes[0]
-                  : act.imagen_url || '/logo.png';
+                  : act.imagen_url;
 
+              const imagenUrl = obtenerUrlImagen(primeraImg);
               const categorias = act.categorias || (act.categoria ? [act.categoria] : []);
 
               return (
@@ -155,7 +185,7 @@ export default function HomePage() {
                 >
                   <div className="relative h-48 w-full bg-[#FAFAF7] overflow-hidden">
                     <img
-                      src={imagen}
+                      src={imagenUrl}
                       alt={act.titulo}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
