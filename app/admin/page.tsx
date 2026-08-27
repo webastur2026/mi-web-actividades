@@ -17,7 +17,6 @@ interface ImagenObjeto {
   fuente: string;
 }
 
-
 interface Actividad {
   id?: string;
   titulo: string;
@@ -35,7 +34,7 @@ interface Actividad {
   web_url: string;
   wikiloc_embed?: string;
   publicado: boolean;
-imagenes: (string | ImagenObjeto)[];
+  imagenes: (string | ImagenObjeto)[];
   enlaces: EnlaceInteres[];
 }
 
@@ -47,6 +46,30 @@ const CATEGORIAS_PREDEFINIDAS = [
   'Parques y Granja Escuela',
   'Ocio en Familia',
 ];
+
+// Helper para extraer la URL y fuente limpia sin importar el formato almacenado
+function normalizarImagenForm(img: any): { url: string; fuente: string } {
+  if (!img) return { url: '', fuente: '' };
+
+  if (typeof img === 'object') {
+    return { url: img.url || '', fuente: img.fuente || '' };
+  }
+
+  if (typeof img === 'string') {
+    const texto = img.trim();
+    if (texto.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(texto);
+        return { url: parsed.url || '', fuente: parsed.fuente || '' };
+      } catch {
+        return { url: texto, fuente: '' };
+      }
+    }
+    return { url: texto, fuente: '' };
+  }
+
+  return { url: '', fuente: '' };
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -131,42 +154,58 @@ export default function AdminDashboard() {
     }));
   };
 
-const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
+  const hacerPortada = (indexAMover: number) => {
+    setFormData((prev) => {
+      const nuevasImagenes = [...prev.imagenes];
+      const [imagenSeleccionada] = nuevasImagenes.splice(indexAMover, 1);
+      nuevasImagenes.unshift(imagenSeleccionada);
 
-  setSubiendoImg(true);
-  const nuevasImagenes: ImagenObjeto[] = [];
+      const { url: urlPortada } = normalizarImagenForm(imagenSeleccionada);
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      return {
+        ...prev,
+        imagenes: nuevasImagenes,
+        imagen_url: urlPortada,
+      };
+    });
+  };
 
-    const { data, error } = await supabase.storage
-      .from('actividades-imagenes')
-      .upload(fileName, file, {
-        contentType: file.type || 'image/jpeg',
-        upsert: true,
-      });
+  const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    if (error) {
-      alert(`Error al subir "${file.name}": ${error.message}`);
-    } else if (data) {
-      const { data: urlData } = supabase.storage
+    setSubiendoImg(true);
+    const nuevasImagenes: ImagenObjeto[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
         .from('actividades-imagenes')
-        .getPublicUrl(data.path);
+        .upload(fileName, file, {
+          contentType: file.type || 'image/jpeg',
+          upsert: true,
+        });
 
-      nuevasImagenes.push({ url: urlData.publicUrl, fuente: '' });
+      if (error) {
+        alert(`Error al subir "${file.name}": ${error.message}`);
+      } else if (data) {
+        const { data: urlData } = supabase.storage
+          .from('actividades-imagenes')
+          .getPublicUrl(data.path);
+
+        nuevasImagenes.push({ url: urlData.publicUrl, fuente: '' });
+      }
     }
-  }
 
-  setFormData((prev) => ({
-    ...prev,
-    imagenes: [...prev.imagenes, ...nuevasImagenes],
-  }));
-  setSubiendoImg(false);
-};
+    setFormData((prev) => ({
+      ...prev,
+      imagenes: [...prev.imagenes, ...nuevasImagenes],
+    }));
+    setSubiendoImg(false);
+  };
 
   function eliminarImagen(index: number) {
     setFormData((prev) => ({
@@ -232,12 +271,14 @@ const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    const primeraFoto = formData.imagenes.length > 0 ? normalizarImagenForm(formData.imagenes[0]).url : null;
+
     const payload = {
       ...formData,
       slug: formData.slug || generarSlug(formData.titulo),
       categoria: formData.categorias.length > 0 ? formData.categorias[0] : null,
       categorias: formData.categorias,
-      imagen_url: formData.imagenes.length > 0 ? formData.imagenes[0] : null,
+      imagen_url: primeraFoto,
     };
 
     if (editando?.id) {
@@ -475,50 +516,84 @@ const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
               />
               {subiendoImg && <p className="text-xs text-[#F48C2E] font-bold">Subiendo fotos...</p>}
 
-{/* Galería de fotos con autoría */}
-{formData.imagenes.length > 0 && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-    {formData.imagenes.map((img, idx) => {
-      const esString = typeof img === 'string';
-      const url = esString ? (img as string) : img.url;
-      const fuente = esString ? '' : img.fuente || '';
+              {/* Galería de fotos con selección de Portada y normalización de datos */}
+              {formData.imagenes.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  {formData.imagenes.map((img, idx) => {
+                    const { url, fuente } = normalizarImagenForm(img);
+                    const esPortada = idx === 0;
 
-      return (
-        <div key={idx} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-[#EBF2E8]">
-          <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-[#EBF2E8]">
-            <img src={url} alt="Vista previa" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <label className="block text-[10px] font-bold text-[#6B5340] mb-0.5">
-              Fuente / Autor de la foto
-            </label>
-            <input
-              type="text"
-              value={fuente}
-              onChange={(e) => {
-                const nuevaFuente = e.target.value;
-                setFormData((prev) => {
-                  const nuevas = [...prev.imagenes];
-                  nuevas[idx] = { url, fuente: nuevaFuente };
-                  return { ...prev, imagenes: nuevas };
-                });
-              }}
-              placeholder="Ej: Turismo Asturias / Propia"
-              className="w-full p-1.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-lg text-xs text-[#4A3728] outline-none focus:ring-1 focus:ring-[#1FA4B6]"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => eliminarImagen(idx)}
-            className="text-red-500 font-bold text-xs p-1 hover:bg-red-50 rounded shrink-0"
-          >
-            ✕
-          </button>
-        </div>
-      );
-    })}
-  </div>
-)}            </div>
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                          esPortada 
+                            ? 'bg-[#EBF2E8]/50 border-[#1FA4B6] ring-1 ring-[#1FA4B6]' 
+                            : 'bg-white border-[#EBF2E8]'
+                        }`}
+                      >
+                        {/* Vista previa de la foto */}
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-[#EBF2E8] bg-gray-100">
+                          {url ? (
+                            <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">Sin foto</div>
+                          )}
+                          
+                          {esPortada && (
+                            <span className="absolute top-0 left-0 bg-[#1FA4B6] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-md">
+                              Portada
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Campo de fuente / autor */}
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-[10px] font-bold text-[#6B5340] mb-0.5">
+                            Fuente / Autor
+                          </label>
+                          <input
+                            type="text"
+                            value={fuente}
+                            onChange={(e) => {
+                              const nuevaFuente = e.target.value;
+                              setFormData((prev) => {
+                                const nuevas = [...prev.imagenes];
+                                nuevas[idx] = { url, fuente: nuevaFuente };
+                                return { ...prev, imagenes: nuevas };
+                              });
+                            }}
+                            placeholder="Ej: Turismo Asturias / Propia"
+                            className="w-full p-1.5 bg-[#FAFAF7] border border-[#EBF2E8] rounded-lg text-xs text-[#4A3728] outline-none focus:ring-1 focus:ring-[#1FA4B6]"
+                          />
+
+                          {/* Acciones: Marcar como portada */}
+                          {!esPortada && (
+                            <button
+                              type="button"
+                              onClick={() => hacerPortada(idx)}
+                              className="mt-1 text-[11px] font-bold text-[#1FA4B6] hover:underline flex items-center gap-1"
+                            >
+                              ⭐ Hacer portada
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Botón eliminar */}
+                        <button
+                          type="button"
+                          onClick={() => eliminarImagen(idx)}
+                          className="text-red-500 font-bold text-xs p-1 hover:bg-red-50 rounded shrink-0"
+                          title="Eliminar foto"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <div className="space-y-3 bg-[#FAFAF7] p-4 rounded-xl border border-[#EBF2E8]">
               <label className="block text-xs font-bold text-[#4A3728]">
