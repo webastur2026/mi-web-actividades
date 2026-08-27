@@ -125,37 +125,43 @@ export default function AdminDashboard() {
     }));
   };
 
-  const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+const handleSubirImagenes = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
 
-    setSubiendoImg(true);
-    const nuevasUrls: string[] = [];
+  setSubiendoImg(true);
+  const nuevasUrls: string[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      const { data, error } = await supabase.storage
-        .from('actividades')
-        .upload(fileName, file);
+    // Cambiado 'actividades' por 'actividades-imagenes'
+    const { data, error } = await supabase.storage
+      .from('actividades-imagenes')
+      .upload(fileName, file, {
+        contentType: file.type || 'image/jpeg',
+        upsert: true,
+      });
 
-      if (!error && data) {
-        const { data: urlData } = supabase.storage
-          .from('actividades')
-          .getPublicUrl(data.path);
+    if (error) {
+      alert(`Error al subir "${file.name}": ${error.message}`);
+    } else if (data) {
+      const { data: urlData } = supabase.storage
+        .from('actividades-imagenes')
+        .getPublicUrl(data.path);
 
-        nuevasUrls.push(urlData.publicUrl);
-      }
+      nuevasUrls.push(urlData.publicUrl);
     }
+  }
 
-    setFormData((prev) => ({
-      ...prev,
-      imagenes: [...prev.imagenes, ...nuevasUrls],
-    }));
-    setSubiendoImg(false);
-  };
+  setFormData((prev) => ({
+    ...prev,
+    imagenes: [...prev.imagenes, ...nuevasUrls],
+  }));
+  setSubiendoImg(false);
+};
 
   function eliminarImagen(index: number) {
     setFormData((prev) => ({
